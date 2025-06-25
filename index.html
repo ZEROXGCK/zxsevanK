@@ -79,26 +79,49 @@
   }
 
   function saveData() {
-    const dateInput = document.getElementById('workDate').value;
-    const rounds = parseInt(document.getElementById('rounds').value);
-    if (isNaN(rounds)) {
-      alert("กรุณากรอกจำนวนรอบ");
-      return;
-    }
+  const dateInput = document.getElementById('workDate').value;
+  const rounds = parseInt(document.getElementById('rounds').value);
+  if (isNaN(rounds)) {
+    alert("กรุณากรอกจำนวนรอบ");
+    return;
+  }
 
-    const date = dateInput ? new Date(dateInput) : new Date();
-    const dateStr = date.toISOString().split('T')[0];
-    const income = Math.round(rounds * 15 * 0.99);
-    const roundInfo = getRound(date);
-    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+  const date = dateInput ? new Date(dateInput) : new Date();
+  const dateStr = date.toISOString().split('T')[0];
+  const income = Math.round(rounds * 15 * 0.99);
+  const roundInfo = getRound(date);
+  const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 
-    const entry = {
+  const entry = {
+    date: dateStr,
+    rounds: rounds,
+    income: income,
+    roundLabel: roundInfo.roundLabel,
+    payDate: roundInfo.payDate
+  };
+
+  const history = JSON.parse(localStorage.getItem("riderData") || "{}");
+  if (!history[monthKey]) history[monthKey] = [];
+  history[monthKey].push(entry);
+  localStorage.setItem("riderData", JSON.stringify(history));
+
+  // ✅ ส่งข้อมูลไป Google Sheets ด้วย GAS
+  fetch("https://script.google.com/macros/s/AKfycbz9_FFMORvKmUR2tQ23gP22CvGjxUmL6N3hcJZy-GHp6qa_DfGMmgBCleJdWBhhlp-o/exec", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
       date: dateStr,
       rounds: rounds,
-      income: income,
-      roundLabel: roundInfo.roundLabel,
-      payDate: roundInfo.payDate
-    };
+      income: income
+    })
+  });
+
+  alert("บันทึกแล้ว");
+  document.getElementById("riderForm").reset();
+  document.getElementById("workDate").value = new Date().toISOString().split('T')[0];
+  loadMonthSelector();
+}
+
 
     const history = JSON.parse(localStorage.getItem("riderData") || "{}");
     if (!history[monthKey]) history[monthKey] = [];
