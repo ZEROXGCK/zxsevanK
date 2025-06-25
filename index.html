@@ -107,7 +107,7 @@
         localStorage.setItem("riderData", JSON.stringify(history));
 
         // ✅ ส่งข้อมูลไป Google Sheets ด้วย GAS
-        fetch("https://script.google.com/macros/s/AKfycbz9_FFMORvKmUR2tQ23gP22CvGjxUmL6N3hcJZy-GHp6qa_DfGMmgBCleJdWBhhlp-o/exec", {
+        fetch("https://script.google.com/macros/library/d/1vmKNliosD8eE8iSbOH49HlFDPHkx1rzo24TzD2mVENcORfMKmKndLXGY/1", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
