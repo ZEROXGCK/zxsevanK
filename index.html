@@ -1,5 +1,4 @@
 <!doctype html>
-
 <html lang="th">
   <head>
     <meta charset="utf-8">
@@ -12,196 +11,207 @@
       <div class="container">
         <span class="navbar-brand mb-0 h1">ระบบคำนวณรายได้ไรเดอร์</span>
       </div>
-    </nav><div class="container">
-  <form id="riderForm" class="row g-3">
-    <div class="col-md-6">
-      <label for="workDate" class="form-label">วันที่ (ไม่เลือก = วันนี้)</label>
-      <input type="date" class="form-control" id="workDate">
+    </nav>
+
+    <div class="container">
+      <form id="riderForm" class="row g-3">
+        <div class="col-md-6">
+          <label for="workDate" class="form-label">วันที่ (ไม่เลือก = วันนี้)</label>
+          <input type="date" class="form-control" id="workDate">
+        </div>
+        <div class="col-md-6">
+          <label for="rounds" class="form-label">จำนวนรอบ</label>
+          <input type="number" class="form-control" id="rounds" min="0" placeholder="เช่น 10">
+        </div>
+        <div class="col-12">
+          <button type="button" class="btn btn-primary" onclick="saveData()">บันทึกรายได้</button>
+          <button type="button" class="btn btn-success" onclick="exportCSV()">Export Excel</button>
+        </div>
+      </form>
+
+      <div class="history mt-5">
+        <h4>ประวัติรายได้รายเดือน</h4>
+        <select id="monthSelector" class="form-select mb-3" onchange="renderHistory()"></select>
+        <table class="table table-striped bg-white">
+          <thead>
+            <tr><th>วันที่</th><th>รอบ</th><th>รายได้ (บาท)</th><th>จัดการ</th></tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot>
+            <tr>
+              <th colspan="2">รวม</th>
+              <th id="totalIncome"></th>
+              <th></th>
+            </tr>
+          </tfoot>
+        </table>
+
+        <h5 class="mt-4">สรุปรายได้ตามรอบบิล</h5>
+        <table class="table table-bordered bg-white">
+          <thead>
+            <tr><th>รอบบิล</th><th>วันจ่าย</th><th>รวมรายได้สุทธิ</th></tr>
+          </thead>
+          <tbody id="roundSummary"></tbody>
+        </table>
+      </div>
     </div>
-    <div class="col-md-6">
-      <label for="rounds" class="form-label">จำนวนรอบ</label>
-      <input type="number" class="form-control" id="rounds" min="0" placeholder="เช่น 10">
-    </div>
-    <div class="col-12">
-      <button type="button" class="btn btn-primary" onclick="saveData()">บันทึกรายได้</button>
-      <button type="button" class="btn btn-success" onclick="exportCSV()">Export Excel</button>
-    </div>
-  </form>
 
-  <div class="history mt-5">
-    <h4>ประวัติรายได้รายเดือน</h4>
-    <select id="monthSelector" class="form-select mb-3" onchange="renderHistory()"></select>
-    <table class="table table-striped bg-white">
-      <thead>
-        <tr><th>วันที่</th><th>รอบ</th><th>รายได้ (บาท)</th><th>จัดการ</th></tr>
-      </thead>
-      <tbody></tbody>
-      <tfoot>
-        <tr>
-          <th colspan="2">รวม</th>
-          <th id="totalIncome"></th>
-          <th></th>
-        </tr>
-      </tfoot>
-    </table>
+    <script>
+      const roundMapping = [
+        { start: 1, end: 3, pay: 11 },
+        { start: 4, end: 6, pay: 14 },
+        { start: 7, end: 9, pay: 17 },
+        { start: 10, end: 12, pay: 20 },
+        { start: 13, end: 15, pay: 23 },
+        { start: 16, end: 18, pay: 26 },
+        { start: 19, end: 21, pay: 29 },
+        { start: 22, end: 24, pay: 1 },
+        { start: 25, end: 27, pay: 4 },
+        { start: 28, end: 31, pay: 8 }
+      ];
 
-    <h5 class="mt-4">สรุปรายได้ตามรอบบิล</h5>
-    <table class="table table-bordered bg-white">
-      <thead>
-        <tr><th>รอบบิล</th><th>วันจ่าย</th><th>รวมรายได้สุทธิ</th></tr>
-      </thead>
-      <tbody id="roundSummary"></tbody>
-    </table>
-  </div>
-</div>
+      function getRound(date) {
+        const day = date.getDate();
+        const r = roundMapping.find(r => day >= r.start && day <= r.end);
+        return {
+          roundLabel: `${r.start}-${r.end}`,
+          payDate: r.pay
+        };
+      }
 
-<script>
-  const roundMapping = [
-    { start: 1, end: 3, pay: 11 },
-    { start: 4, end: 6, pay: 14 },
-    { start: 7, end: 9, pay: 17 },
-    { start: 10, end: 12, pay: 20 },
-    { start: 13, end: 15, pay: 23 },
-    { start: 16, end: 18, pay: 26 },
-    { start: 19, end: 21, pay: 29 },
-    { start: 22, end: 24, pay: 1 },
-    { start: 25, end: 27, pay: 4 },
-    { start: 28, end: 31, pay: 8 }
-  ];
+      function saveData() {
+        const dateInput = document.getElementById('workDate').value;
+        const rounds = parseInt(document.getElementById('rounds').value);
+        if (isNaN(rounds)) {
+          alert("กรุณากรอกจำนวนรอบ");
+          return;
+        }
 
-  function getRound(date) {
-    const day = date.getDate();
-    const r = roundMapping.find(r => day >= r.start && day <= r.end);
-    return {
-      roundLabel: `${r.start}-${r.end}`,
-      payDate: r.pay
-    };
-  }
+        const date = dateInput ? new Date(dateInput) : new Date();
+        const dateStr = date.toISOString().split('T')[0];
+        const income = Math.round(rounds * 15 * 0.99);
+        const roundInfo = getRound(date);
+        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 
-  function saveData() {
-  const dateInput = document.getElementById('workDate').value;
-  const rounds = parseInt(document.getElementById('rounds').value);
-  if (isNaN(rounds)) {
-    alert("กรุณากรอกจำนวนรอบ");
-    return;
-  }
+        const entry = {
+          date: dateStr,
+          rounds: rounds,
+          income: income,
+          roundLabel: roundInfo.roundLabel,
+          payDate: roundInfo.payDate
+        };
 
-  const date = dateInput ? new Date(dateInput) : new Date();
-  const dateStr = date.toISOString().split('T')[0];
-  const income = Math.round(rounds * 15 * 0.99);
-  const roundInfo = getRound(date);
-  const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        const history = JSON.parse(localStorage.getItem("riderData") || "{}");
+        if (!history[monthKey]) history[monthKey] = [];
+        history[monthKey].push(entry);
+        localStorage.setItem("riderData", JSON.stringify(history));
 
-  const entry = {
-    date: dateStr,
-    rounds: rounds,
-    income: income,
-    roundLabel: roundInfo.roundLabel,
-    payDate: roundInfo.payDate
-  };
+        // ✅ ส่งข้อมูลไป Google Sheets ด้วย GAS
+        fetch("https://script.google.com/macros/s/AKfycbz9_FFMORvKmUR2tQ23gP22CvGjxUmL6N3hcJZy-GHp6qa_DfGMmgBCleJdWBhhlp-o/exec", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            date: dateStr,
+            rounds: rounds,
+            income: income
+          })
+        })
+        .then(res => res.text())
+        .then(data => console.log("ส่งข้อมูลไป Google Sheets สำเร็จ:", data))
+        .catch(err => console.error("ส่งข้อมูลไม่สำเร็จ:", err));
 
-  const history = JSON.parse(localStorage.getItem("riderData") || "{}");
-  if (!history[monthKey]) history[monthKey] = [];
-  history[monthKey].push(entry);
-  localStorage.setItem("riderData", JSON.stringify(history));
+        alert("บันทึกแล้ว");
+        document.getElementById("riderForm").reset();
+        document.getElementById("workDate").value = new Date().toISOString().split('T')[0];
+        loadMonthSelector();
+      }
 
-  // ✅ ส่งข้อมูลไป Google Sheets ผ่าน GAS
-  fetch("https://script.google.com/macros/s/AKfycbz9_FFMORvKmUR2tQ23gP22CvGjxUmL6N3hcJZy-GHp6qa_DfGMmgBCleJdWBhhlp-o/exec", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      date: dateStr,
-      rounds: rounds,
-      income: income
-    })
-  })
-  .then(res => res.text())
-  .then(data => console.log("ส่งข้อมูลไป Google Sheets สำเร็จ:", data))
-  .catch(err => console.error("ส่งข้อมูลไม่สำเร็จ:", err));
+      function deleteEntry(month, index) {
+        const history = JSON.parse(localStorage.getItem("riderData") || "{}");
+        if (confirm("ลบข้อมูลรายการนี้?")) {
+          history[month].splice(index, 1);
+          localStorage.setItem("riderData", JSON.stringify(history));
+          renderHistory();
+        }
+      }
 
-  alert("บันทึกแล้ว");
-  document.getElementById("riderForm").reset();
-  document.getElementById("workDate").value = new Date().toISOString().split('T')[0];
-  loadMonthSelector();
-}
+      function renderHistory() {
+        const month = document.getElementById("monthSelector").value;
+        const history = JSON.parse(localStorage.getItem("riderData") || "{}");
+        const tbody = document.querySelector("tbody");
+        const totalCell = document.getElementById("totalIncome");
+        const roundSummary = document.getElementById("roundSummary");
+        tbody.innerHTML = "";
+        roundSummary.innerHTML = "";
+        let total = 0;
+        let roundTotals = {};
 
+        if (!history[month]) return;
 
-  function deleteEntry(month, index) {
-    const history = JSON.parse(localStorage.getItem("riderData") || "{}");
-    if (confirm("ลบข้อมูลรายการนี้?")) {
-      history[month].splice(index, 1);
-      localStorage.setItem("riderData", JSON.stringify(history));
-      renderHistory();
-    }
-  }
+        history[month].forEach((entry, index) => {
+          total += entry.income;
 
-  function renderHistory() {
-    const month = document.getElementById("monthSelector").value;
-    const history = JSON.parse(localStorage.getItem("riderData") || "{}");
-    const tbody = document.querySelector("tbody");
-    const totalCell = document.getElementById("totalIncome");
-    const roundSummary = document.getElementById("roundSummary");
-    tbody.innerHTML = "";
-    roundSummary.innerHTML = "";
-    let total = 0;
-    let roundTotals = {};
+          const key = entry.roundLabel + "|" + entry.payDate;
+          if (!roundTotals[key]) roundTotals[key] = 0;
+          roundTotals[key] += entry.income;
 
-    if (!history[month]) return;
+          const row = `
+            <tr>
+              <td>${entry.date}</td>
+              <td>${entry.rounds}</td>
+              <td>${entry.income}</td>
+              <td>
+                <button class="btn btn-sm btn-danger" onclick="deleteEntry('${month}', ${index})">ลบ</button>
+              </td>
+            </tr>`;
+          tbody.insertAdjacentHTML('beforeend', row);
+        });
 
-    history[month].forEach((entry, index) => {
-      total += entry.income;
+        totalCell.textContent = total + " บาท";
 
-      const key = entry.roundLabel + "|" + entry.payDate;
-      if (!roundTotals[key]) roundTotals[key] = 0;
-      roundTotals[key] += entry.income;
+        Object.keys(roundTotals).forEach(key => {
+          const [range, pay] = key.split('|');
+          const row = `
+            <tr>
+              <td>${range}</td>
+              <td>${pay}</td>
+              <td>${roundTotals[key]} บาท</td>
+            </tr>`;
+          roundSummary.insertAdjacentHTML('beforeend', row);
+        });
+      }
 
-      const row = `
-        <tr>
-          <td>${entry.date}</td>
-          <td>${entry.rounds}</td>
-          <td>${entry.income}</td>
-          <td>
-            <button class="btn btn-sm btn-danger" onclick="deleteEntry('${month}', ${index})">ลบ</button>
-          </td>
-        </tr>`;
-      tbody.insertAdjacentHTML('beforeend', row);
-    });
+      function exportCSV() {
+        const history = JSON.parse(localStorage.getItem("riderData") || "{}");
+        let csv = "เดือน,วันที่,จำนวนรอบ,รายได้\n";
+        for (const month in history) {
+          history[month].forEach(entry => {
+            csv += `${month},${entry.date},${entry.rounds},${entry.income}\n`;
+          });
+        }
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "rider-income.csv";
+        link.click();
+      }
 
-    totalCell.textContent = total + " บาท";
+      function loadMonthSelector() {
+        const history = JSON.parse(localStorage.getItem("riderData") || "{}");
+        const selector = document.getElementById("monthSelector");
+        const months = Object.keys(history).sort().reverse();
+        selector.innerHTML = months.map(m => `<option value="${m}">${m}</option>`).join("");
+        if (months.length > 0) {
+          selector.value = months[0];
+          renderHistory();
+        }
+      }
 
-    Object.keys(roundTotals).forEach(key => {
-      const [range, pay] = key.split('|');
-      const row = `
-        <tr>
-          <td>${range}</td>
-          <td>${pay}</td>
-          <td>${roundTotals[key]} บาท</td>
-        </tr>`;
-      roundSummary.insertAdjacentHTML('beforeend', row);
-    });
-  }
-
-  function exportCSV() {
-    const history = JSON.parse(localStorage.getItem("riderData") || "{}");
-    let csv = "เดือน,วันที่,จำนวนรอบ,รายได้\n";
-    for (const month in history) {
-      history[month].forEach(entry => {
-        csv += `${month},${entry.date},${entry.rounds},${entry.income}\n`;
-      });
-    }
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "rider-income.csv";
-    link.click();
-  }
-
-  window.onload = () => {
-    document.getElementById("workDate").value = new Date().toISOString().split('T')[0];
-    loadMonthSelector();
-  };
-</script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-
+      window.onload = () => {
+        document.getElementById("workDate").value = new Date().toISOString().split('T')[0];
+        loadMonthSelector();
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
