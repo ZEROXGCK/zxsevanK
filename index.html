@@ -1,0 +1,195 @@
+<!doctype html>
+
+<html lang="th">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ระบบคำนวณรายได้ไรเดอร์</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body class="bg-light">
+    <nav class="navbar navbar-light bg-white shadow-sm mb-4">
+      <div class="container">
+        <span class="navbar-brand mb-0 h1">ระบบคำนวณรายได้ไรเดอร์</span>
+      </div>
+    </nav><div class="container">
+  <form id="riderForm" class="row g-3">
+    <div class="col-md-6">
+      <label for="workDate" class="form-label">วันที่ (ไม่เลือก = วันนี้)</label>
+      <input type="date" class="form-control" id="workDate">
+    </div>
+    <div class="col-md-6">
+      <label for="rounds" class="form-label">จำนวนรอบ</label>
+      <input type="number" class="form-control" id="rounds" min="0" placeholder="เช่น 10">
+    </div>
+    <div class="col-12">
+      <button type="button" class="btn btn-primary" onclick="saveData()">บันทึกรายได้</button>
+      <button type="button" class="btn btn-success" onclick="exportCSV()">Export Excel</button>
+    </div>
+  </form>
+
+  <div class="history mt-5">
+    <h4>ประวัติรายได้รายเดือน</h4>
+    <select id="monthSelector" class="form-select mb-3" onchange="renderHistory()"></select>
+    <table class="table table-striped bg-white">
+      <thead>
+        <tr><th>วันที่</th><th>รอบ</th><th>รายได้ (บาท)</th><th>รอบบิล / วันจ่าย</th><th>จัดการ</th></tr>
+      </thead>
+      <tbody></tbody>
+      <tfoot>
+        <tr>
+          <th colspan="2">รวม</th>
+          <th id="totalIncome"></th>
+          <th colspan="2"></th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+<script>
+  const roundMapping = [
+    { start: 1, end: 3, pay: 11 },
+    { start: 4, end: 6, pay: 14 },
+    { start: 7, end: 9, pay: 17 },
+    { start: 10, end: 12, pay: 20 },
+    { start: 13, end: 15, pay: 23 },
+    { start: 16, end: 18, pay: 26 },
+    { start: 19, end: 21, pay: 29 },
+    { start: 22, end: 24, pay: 1 },
+    { start: 25, end: 27, pay: 4 },
+    { start: 28, end: 31, pay: 8 }
+  ];
+
+  function getRound(date) {
+    const day = date.getDate();
+    const r = roundMapping.find(r => day >= r.start && day <= r.end);
+    return {
+      roundLabel: `${r.start}-${r.end}`,
+      payDate: r.pay
+    };
+  }
+
+  function saveData() {
+    const dateInput = document.getElementById('workDate').value;
+    const rounds = parseInt(document.getElementById('rounds').value);
+    if (isNaN(rounds)) {
+      alert("กรุณากรอกจำนวนรอบ");
+      return;
+    }
+
+    const date = dateInput ? new Date(dateInput) : new Date();
+    const dateStr = date.toISOString().split('T')[0];
+    const income = Math.round(rounds * 15 * 0.99);
+    const roundInfo = getRound(date);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+    const entry = {
+      date: dateStr,
+      rounds: rounds,
+      income: income,
+      roundLabel: roundInfo.roundLabel,
+      payDate: roundInfo.payDate
+    };
+
+    const history = JSON.parse(localStorage.getItem("riderData") || "{}");
+    if (!history[monthKey]) history[monthKey] = [];
+    history[monthKey].push(entry);
+    localStorage.setItem("riderData", JSON.stringify(history));
+
+    alert("บันทึกแล้ว");
+    document.getElementById("riderForm").reset();
+    document.getElementById("workDate").value = new Date().toISOString().split('T')[0];
+    loadMonthSelector();
+  }
+
+  function deleteEntry(month, index) {
+    const history = JSON.parse(localStorage.getItem("riderData") || "{}");
+    if (confirm("ลบข้อมูลรายการนี้?")) {
+      history[month].splice(index, 1);
+      localStorage.setItem("riderData", JSON.stringify(history));
+      renderHistory();
+    }
+  }
+
+  function editEntry(month, index) {
+    const newRounds = prompt("กรุณากรอกจำนวนรอบใหม่:");
+    if (newRounds !== null && !isNaN(newRounds)) {
+      const history = JSON.parse(localStorage.getItem("riderData") || "{}");
+      const entry = history[month][index];
+      entry.rounds = parseInt(newRounds);
+      entry.income = Math.round(entry.rounds * 15 * 0.99);
+      localStorage.setItem("riderData", JSON.stringify(history));
+      renderHistory();
+    }
+  }
+
+  function loadMonthSelector() {
+    const history = JSON.parse(localStorage.getItem("riderData") || "{}");
+    const selector = document.getElementById("monthSelector");
+    selector.innerHTML = "";
+    Object.keys(history).sort().reverse().forEach(month => {
+      const option = document.createElement("option");
+      option.value = month;
+      option.textContent = month;
+      selector.appendChild(option);
+    });
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const month = document.getElementById("monthSelector").value;
+    const history = JSON.parse(localStorage.getItem("riderData") || "{}");
+    const tbody = document.querySelector("tbody");
+    const totalCell = document.getElementById("totalIncome");
+    tbody.innerHTML = "";
+    let total = 0;
+
+    if (!history[month]) return;
+
+    history[month].forEach((entry, index) => {
+      total += entry.income;
+      const row = `
+        <tr>
+          <td>${entry.date}</td>
+          <td>${entry.rounds}</td>
+          <td>${entry.income}</td>
+          <td>${entry.roundLabel}<br>จ่าย: ${entry.payDate}</td>
+          <td>
+            <button class="btn btn-sm btn-warning" onclick="editEntry('${month}', ${index})">แก้ไข</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteEntry('${month}', ${index})">ลบ</button>
+          </td>
+        </tr>`;
+      tbody.insertAdjacentHTML('beforeend', row);
+    });
+
+    totalCell.textContent = total + " บาท";
+  }
+
+  function exportCSV() {
+    const history = JSON.parse(localStorage.getItem("riderData") || "{});");
+    let csv = "เดือน,วันที่,จำนวนรอบ,รายได้,รอบบิล,วันจ่าย\n";
+    for (const month in history) {
+      history[month].forEach(entry => {
+        csv += `${month},${entry.date},${entry.rounds},${entry.income},${entry.roundLabel},${entry.payDate}\n`;
+      });
+    }
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "rider-income.csv";
+    link.click();
+  }
+
+  window.onload = () => {
+    document.getElementById("workDate").value = new Date().toISOString().split('T')[0];
+    loadMonthSelector();
+  };
+</script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  </body>
+</html>
