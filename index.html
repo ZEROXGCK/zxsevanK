@@ -105,7 +105,7 @@
   history[monthKey].push(entry);
   localStorage.setItem("riderData", JSON.stringify(history));
 
-  // ✅ ส่งข้อมูลไป Google Sheets ด้วย GAS
+  // ✅ ส่งข้อมูลไป Google Sheets ผ่าน GAS
   fetch("https://script.google.com/macros/s/AKfycbz9_FFMORvKmUR2tQ23gP22CvGjxUmL6N3hcJZy-GHp6qa_DfGMmgBCleJdWBhhlp-o/exec", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -114,7 +114,10 @@
       rounds: rounds,
       income: income
     })
-  });
+  })
+  .then(res => res.text())
+  .then(data => console.log("ส่งข้อมูลไป Google Sheets สำเร็จ:", data))
+  .catch(err => console.error("ส่งข้อมูลไม่สำเร็จ:", err));
 
   alert("บันทึกแล้ว");
   document.getElementById("riderForm").reset();
@@ -122,17 +125,6 @@
   loadMonthSelector();
 }
 
-
-    const history = JSON.parse(localStorage.getItem("riderData") || "{}");
-    if (!history[monthKey]) history[monthKey] = [];
-    history[monthKey].push(entry);
-    localStorage.setItem("riderData", JSON.stringify(history));
-
-    alert("บันทึกแล้ว");
-    document.getElementById("riderForm").reset();
-    document.getElementById("workDate").value = new Date().toISOString().split('T')[0];
-    loadMonthSelector();
-  }
 
   function deleteEntry(month, index) {
     const history = JSON.parse(localStorage.getItem("riderData") || "{}");
