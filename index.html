@@ -5,7 +5,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ระบบคำนวณรายได้ไรเดอร์</title>
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
   </head>
   <body class="bg-light">
@@ -34,16 +33,24 @@
     <select id="monthSelector" class="form-select mb-3" onchange="renderHistory()"></select>
     <table class="table table-striped bg-white">
       <thead>
-        <tr><th>วันที่</th><th>รอบ</th><th>รายได้ (บาท)</th><th>รอบบิล / วันจ่าย</th><th>จัดการ</th></tr>
+        <tr><th>วันที่</th><th>รอบ</th><th>รายได้ (บาท)</th><th>จัดการ</th></tr>
       </thead>
       <tbody></tbody>
       <tfoot>
         <tr>
           <th colspan="2">รวม</th>
           <th id="totalIncome"></th>
-          <th colspan="2"></th>
+          <th></th>
         </tr>
       </tfoot>
+    </table>
+
+    <h5 class="mt-4">สรุปรายได้ตามรอบบิล</h5>
+    <table class="table table-bordered bg-white">
+      <thead>
+        <tr><th>รอบบิล</th><th>วันจ่าย</th><th>รวมรายได้สุทธิ</th></tr>
+      </thead>
+      <tbody id="roundSummary"></tbody>
     </table>
   </div>
 </div>
@@ -113,51 +120,32 @@
     }
   }
 
-  function editEntry(month, index) {
-    const newRounds = prompt("กรุณากรอกจำนวนรอบใหม่:");
-    if (newRounds !== null && !isNaN(newRounds)) {
-      const history = JSON.parse(localStorage.getItem("riderData") || "{}");
-      const entry = history[month][index];
-      entry.rounds = parseInt(newRounds);
-      entry.income = Math.round(entry.rounds * 15 * 0.99);
-      localStorage.setItem("riderData", JSON.stringify(history));
-      renderHistory();
-    }
-  }
-
-  function loadMonthSelector() {
-    const history = JSON.parse(localStorage.getItem("riderData") || "{}");
-    const selector = document.getElementById("monthSelector");
-    selector.innerHTML = "";
-    Object.keys(history).sort().reverse().forEach(month => {
-      const option = document.createElement("option");
-      option.value = month;
-      option.textContent = month;
-      selector.appendChild(option);
-    });
-    renderHistory();
-  }
-
   function renderHistory() {
     const month = document.getElementById("monthSelector").value;
     const history = JSON.parse(localStorage.getItem("riderData") || "{}");
     const tbody = document.querySelector("tbody");
     const totalCell = document.getElementById("totalIncome");
+    const roundSummary = document.getElementById("roundSummary");
     tbody.innerHTML = "";
+    roundSummary.innerHTML = "";
     let total = 0;
+    let roundTotals = {};
 
     if (!history[month]) return;
 
     history[month].forEach((entry, index) => {
       total += entry.income;
+
+      const key = entry.roundLabel + "|" + entry.payDate;
+      if (!roundTotals[key]) roundTotals[key] = 0;
+      roundTotals[key] += entry.income;
+
       const row = `
         <tr>
           <td>${entry.date}</td>
           <td>${entry.rounds}</td>
           <td>${entry.income}</td>
-          <td>${entry.roundLabel}<br>จ่าย: ${entry.payDate}</td>
           <td>
-            <button class="btn btn-sm btn-warning" onclick="editEntry('${month}', ${index})">แก้ไข</button>
             <button class="btn btn-sm btn-danger" onclick="deleteEntry('${month}', ${index})">ลบ</button>
           </td>
         </tr>`;
@@ -165,14 +153,25 @@
     });
 
     totalCell.textContent = total + " บาท";
+
+    Object.keys(roundTotals).forEach(key => {
+      const [range, pay] = key.split('|');
+      const row = `
+        <tr>
+          <td>${range}</td>
+          <td>${pay}</td>
+          <td>${roundTotals[key]} บาท</td>
+        </tr>`;
+      roundSummary.insertAdjacentHTML('beforeend', row);
+    });
   }
 
   function exportCSV() {
-    const history = JSON.parse(localStorage.getItem("riderData") || "{});");
-    let csv = "เดือน,วันที่,จำนวนรอบ,รายได้,รอบบิล,วันจ่าย\n";
+    const history = JSON.parse(localStorage.getItem("riderData") || "{}");
+    let csv = "เดือน,วันที่,จำนวนรอบ,รายได้\n";
     for (const month in history) {
       history[month].forEach(entry => {
-        csv += `${month},${entry.date},${entry.rounds},${entry.income},${entry.roundLabel},${entry.payDate}\n`;
+        csv += `${month},${entry.date},${entry.rounds},${entry.income}\n`;
       });
     }
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -187,8 +186,6 @@
     loadMonthSelector();
   };
 </script>
-
-<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 
   </body>
