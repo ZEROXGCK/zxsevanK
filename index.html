@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    
     <style>
         body { font-family: 'Kanit', sans-serif; background: #f9fafb; color: #374151; scroll-behavior: smooth; }
         .glass { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.5); }
@@ -22,9 +21,7 @@
     </style>
 </head>
 <body class="p-4 md:p-10">
-
 <div id="app" class="max-w-xl mx-auto relative">
-    
     <div class="fixed top-6 left-0 right-0 z-50 flex flex-col items-center pointer-events-none px-4">
         <transition-group name="fade">
             <div v-for="note in notifications" :key="note.id" 
@@ -40,56 +37,38 @@
             <h1 class="text-xl font-bold tracking-tight">Rider<span class="text-blue-600 font-extrabold">Log</span></h1>
             <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Fast Recording v4.5</p>
         </div>
-        <button @click="currentTab = 'settings'" class="w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-slate-300 shadow-sm border border-slate-100 hover:text-blue-500">
-            <i class="fa-solid fa-gear"></i>
-        </button>
+        <button @click="currentTab = 'settings'" class="w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-slate-300 shadow-sm border border-slate-100 hover:text-blue-500"><i class="fa-solid fa-gear"></i></button>
     </header>
 
     <nav class="flex p-1.5 bg-slate-200/50 rounded-2xl mb-6 border border-slate-200/30">
-        <button v-for="(label, tab) in {record: 'บันทึกงาน', summary: 'สรุปผล'}" 
-                @click="currentTab = tab"
-                :class="['flex-1 py-2 text-[13px] font-semibold rounded-xl transition-all active:scale-95', currentTab === tab ? 'tab-active' : 'text-slate-500']">
-            {{label}}
-        </button>
+        <button v-for="(label, tab) in {record: 'บันทึกงาน', summary: 'สรุปผล'}" @click="currentTab = tab"
+                :class="['flex-1 py-2 text-[13px] font-semibold rounded-xl transition-all active:scale-95', currentTab === tab ? 'tab-active' : 'text-slate-500']">{{label}}</button>
     </nav>
 
     <main>
         <transition name="fade" mode="out-in">
             <div :key="currentTab">
-
                 <section v-if="currentTab === 'record'" class="space-y-6">
-                    
                     <div id="recordForm" :class="['glass p-7 rounded-[2.5rem] shadow-sm border border-white transition-all', isEditing ? 'edit-mode' : '']">
                         <div class="flex gap-2 p-1 bg-slate-100/50 rounded-xl mb-6">
                             <button @click="subTab = 'bill'" :class="['flex-1 py-1.5 rounded-lg text-[11px] font-bold transition', subTab === 'bill' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400']">ค่ารอบ</button>
                             <button @click="subTab = 'expense'" :class="['flex-1 py-1.5 rounded-lg text-[11px] font-bold transition', subTab === 'expense' ? 'bg-white text-rose-500 shadow-sm' : 'text-slate-400']">รายจ่าย</button>
                         </div>
-
                         <div v-if="subTab === 'bill'" class="space-y-5">
-                            <div v-if="isEditing" class="text-[10px] font-bold text-blue-600 uppercase mb-2 animate-pulse"><i class="fa-solid fa-pen"></i> กำลังแก้ไขรายการ...</div>
+                            <div v-if="isEditing" class="text-[10px] font-bold text-blue-600 uppercase mb-2 animate-pulse"><i class="fa-solid fa-pen"></i> กำลังแก้ไข...</div>
                             <div>
                                 <label class="text-[10px] font-bold text-slate-400 uppercase ml-1 block mb-1">ราคาต่อบิล</label>
                                 <div class="grid grid-cols-2 gap-3">
-                                    <button v-for="p in [12, 15]" @click="billForm.price = p"
-                                            :class="['price-btn py-3 rounded-2xl border-2 font-bold text-lg', 
-                                                     billForm.price === p ? 'bg-blue-600 border-blue-600 text-white active' : 'bg-white border-slate-100 text-slate-400']">
-                                        ฿{{p}}
-                                    </button>
+                                    <button v-for="p in [12, 15]" @click="billForm.price = p" :class="['price-btn py-3 rounded-2xl border-2 font-bold text-lg', billForm.price === p ? 'bg-blue-600 border-blue-600 text-white active' : 'bg-white border-slate-100 text-slate-400']">฿{{p}}</button>
                                 </div>
                             </div>
-                            
                             <div class="grid grid-cols-2 gap-3">
-                                <div><label class="text-[10px] font-bold text-slate-400 uppercase ml-1 block mb-1">วันที่</label>
-                                    <input type="date" v-model="billForm.date" class="w-full p-3 bg-slate-50 rounded-xl border-0 text-xs outline-none"></div>
-                                <div><label class="text-[10px] font-bold text-slate-400 uppercase ml-1 block mb-1">จำนวนบิล</label>
-                                    <input type="number" v-model.number="billForm.count" placeholder="0" class="w-full p-3 bg-slate-50 rounded-xl border-0 text-lg font-bold outline-none"></div>
+                                <div><label class="text-[10px] font-bold text-slate-400 uppercase ml-1 block mb-1">วันที่</label><input type="date" v-model="billForm.date" class="w-full p-3 bg-slate-50 rounded-xl border-0 text-xs outline-none"></div>
+                                <div><label class="text-[10px] font-bold text-slate-400 uppercase ml-1 block mb-1">จำนวนบิล</label><input type="number" v-model.number="billForm.count" placeholder="0" class="w-full p-3 bg-slate-50 rounded-xl border-0 text-lg font-bold outline-none"></div>
                             </div>
-                            <button @click="saveBill" :class="['w-full py-4 rounded-2xl font-bold text-sm shadow-lg transition-all', isEditing ? 'bg-blue-600 text-white' : 'bg-slate-900 text-white']">
-                                {{ isEditing ? 'บันทึกการแก้ไข' : 'บันทึกรายการใหม่' }}
-                            </button>
+                            <button @click="saveBill" :class="['w-full py-4 rounded-2xl font-bold text-sm shadow-lg transition-all', isEditing ? 'bg-blue-600 text-white' : 'bg-slate-900 text-white']">{{ isEditing ? 'บันทึกการแก้ไข' : 'บันทึกรายการใหม่' }}</button>
                             <button v-if="isEditing" @click="cancelEdit" class="w-full text-xs text-slate-400 font-medium mt-2">ยกเลิก</button>
                         </div>
-
                         <div v-else class="space-y-4">
                             <input type="date" v-model="expenseForm.date" class="w-full p-3 bg-slate-50 rounded-xl text-sm outline-none">
                             <input type="number" v-model.number="expenseForm.amount" placeholder="จำนวนเงิน" class="w-full p-3 bg-slate-50 rounded-xl text-lg font-bold outline-none">
@@ -117,33 +96,18 @@
                     </div>
 
                     <div class="space-y-3 pt-2">
-                        <div class="flex justify-between items-center px-3">
-                            <h3 class="text-[11px] font-bold text-slate-500 uppercase tracking-widest">History Log</h3>
-                            <span class="text-[9px] text-slate-300">{{bills.length + expenses.length}} รายการล่าสุด</span>
-                        </div>
-                        
-                        <div v-for="(item, idx) in bills" :key="'bill-'+idx" class="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-50 hover:border-blue-200 transition-all">
+                        <h3 class="text-[11px] font-bold text-slate-500 uppercase px-3 tracking-widest">History Log</h3>
+                        <div v-for="(item, idx) in bills" :key="'bill-'+idx" class="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-50 transition-all">
                             <div class="flex items-center gap-4">
                                 <div :class="['w-9 h-9 rounded-xl flex items-center justify-center font-bold text-[10px]', item.price === 15 ? 'bg-blue-50 text-blue-600' : 'bg-slate-50 text-slate-500']">฿{{item.price}}</div>
                                 <div><p class="text-[12px] font-bold text-slate-700">{{item.date}}</p><p class="text-[9px] text-slate-400 uppercase">{{item.count}} บิล</p></div>
                             </div>
                             <div class="flex items-center gap-3">
-                                <span class="text-sm font-bold text-slate-800">฿{{(item.count * (item.price || 15) * (1 - settings.taxRate/100)).toFixed(2)}}</span>
+                                <span class="text-sm font-bold">฿{{(item.count * (item.price || 15) * (1 - settings.taxRate/100)).toFixed(2)}}</span>
                                 <div class="flex gap-1">
-                                    <button @click="editBill(idx)" class="w-8 h-8 rounded-lg text-slate-300 hover:text-blue-500 hover:bg-blue-50 flex items-center justify-center transition-all"><i class="fa-solid fa-pen text-[10px]"></i></button>
-                                    <button @click="deleteItem('bills', idx)" class="w-8 h-8 rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50 flex items-center justify-center transition-all"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                                    <button @click="editBill(idx)" class="w-8 h-8 rounded-lg text-slate-300 hover:text-blue-500"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                                    <button @click="deleteItem('bills', idx)" class="w-8 h-8 rounded-lg text-slate-300 hover:text-rose-500"><i class="fa-solid fa-trash text-[10px]"></i></button>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div v-for="(item, idx) in expenses" :key="'exp-'+idx" class="flex justify-between items-center bg-rose-50/30 p-4 rounded-2xl border border-rose-100/50">
-                            <div class="flex items-center gap-4">
-                                <div class="w-9 h-9 rounded-xl bg-rose-100 text-rose-500 flex items-center justify-center"><i class="fa-solid fa-gas-pump text-xs"></i></div>
-                                <div><p class="text-[12px] font-bold text-slate-700">{{item.date}}</p><p class="text-[9px] text-rose-400 uppercase">รายจ่าย</p></div>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <span class="text-sm font-bold text-rose-600">-฿{{item.amount.toLocaleString()}}</span>
-                                <button @click="deleteItem('expenses', idx)" class="w-8 h-8 rounded-lg text-rose-200 hover:text-rose-500 flex items-center justify-center transition-all"><i class="fa-solid fa-trash text-[10px]"></i></button>
                             </div>
                         </div>
                     </div>
@@ -160,12 +124,7 @@
                             <h2 class="text-xl font-bold text-rose-500">฿{{totalExpense.toLocaleString(undefined, {minimumFractionDigits: 2})}}</h2>
                         </div>
                     </div>
-
-                    <div class="glass p-8 rounded-[3rem] shadow-sm relative h-[300px] flex flex-col items-center border-white">
-                        <div class="w-full flex justify-between items-center mb-4">
-                            <h3 class="text-[11px] font-bold text-slate-400 uppercase">Profit Analysis</h3>
-                            <span class="text-xs font-bold text-emerald-500">กำไร ฿{{(totalNet - totalExpense).toLocaleString()}}</span>
-                        </div>
+                    <div class="glass p-8 rounded-[3rem] shadow-sm relative h-[300px] border-white">
                         <canvas id="mainChart"></canvas>
                     </div>
                 </section>
@@ -176,24 +135,7 @@
                         <label class="text-[10px] font-bold text-slate-400 block mb-1">ภาษีหักจ่าย (%)</label>
                         <input type="number" v-model="settings.taxRate" class="w-full p-3 bg-slate-50 rounded-xl outline-none font-bold text-sm">
                     </div>
-                    <div class="glass p-8 rounded-[2.5rem]">
-                        <div class="flex justify-between items-center mb-6"><h3 class="text-sm font-bold text-slate-700 uppercase tracking-widest">Payout Cycles</h3>
-                        <button @click="addPayout" class="text-emerald-500 font-bold text-[10px] uppercase">เพิ่มรอบใหม่</button></div>
-                        <div class="space-y-2 mb-4">
-                            <div v-for="(p, idx) in settings.payoutCycles" class="flex justify-between items-center bg-white p-3.5 rounded-2xl border border-slate-100 text-[10px]">
-                                <span class="text-slate-500">{{p.start}} ~ {{p.end}}</span>
-                                <div class="flex items-center gap-3"><span class="font-bold text-emerald-600">จ่าย: {{p.pay}}</span>
-                                <button @click="settings.payoutCycles.splice(idx, 1); save()" class="text-rose-200"><i class="fa-solid fa-circle-xmark text-sm"></i></button></div>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-3 gap-2 bg-slate-50 p-3 rounded-2xl">
-                            <input type="date" v-model="payoutForm.start" class="bg-transparent text-[9px] outline-none">
-                            <input type="date" v-model="payoutForm.end" class="bg-transparent text-[9px] outline-none">
-                            <input type="date" v-model="payoutForm.pay" class="bg-transparent text-[9px] outline-none">
-                        </div>
-                    </div>
                 </section>
-
             </div>
         </transition>
     </main>
@@ -235,42 +177,31 @@ createApp({
             return `${new Date(s).toLocaleDateString('th-TH', opt)} - ${new Date(e).toLocaleDateString('th-TH', opt)}`;
         },
         saveBill() {
-            if(!this.billForm.count) return this.notify('ระบุจำนวนบิลด้วยครับ', 'error');
+            if(!this.billForm.count) return this.notify('ระบุจำนวนบิล', 'error');
             if(this.isEditing) {
                 this.bills[this.editIndex] = {...this.billForm};
-                this.isEditing = false;
-                this.editIndex = null;
-                this.notify('อัปเดตข้อมูลสำเร็จ', 'success');
+                this.isEditing = false; this.editIndex = null;
+                this.notify('อัปเดตเรียบร้อย');
             } else {
                 this.bills.unshift({...this.billForm});
-                this.notify(`บันทึกค่ารอบ ฿${this.billForm.price} แล้ว`);
+                this.notify('บันทึกสำเร็จ');
             }
-            this.billForm.count = null;
-            this.save();
+            this.billForm.count = null; this.save();
         },
         editBill(idx) {
-            this.isEditing = true;
-            this.editIndex = idx;
+            this.isEditing = true; this.editIndex = idx;
             this.billForm = {...this.bills[idx]};
             this.subTab = 'bill';
-            document.getElementById('recordForm').scrollIntoView({ behavior: 'smooth' });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         },
-        cancelEdit() { this.isEditing = false; this.editIndex = null; this.billForm.count = null; },
+        cancelEdit() { this.isEditing = false; this.billForm.count = null; },
         saveExpense() {
             if(!this.expenseForm.amount) return this.notify('ระบุจำนวนเงิน', 'error');
             this.expenses.unshift({...this.expenseForm});
-            this.expenseForm.amount = null;
-            this.notify('บันทึกรายจ่ายแล้ว');
-            this.save();
-        },
-        addPayout() {
-            if(!this.payoutForm.start || !this.payoutForm.pay) return this.notify('ข้อมูลไม่ครบ', 'error');
-            this.settings.payoutCycles.push({...this.payoutForm});
-            this.payoutForm = { start: '', end: '', pay: '' };
-            this.save();
+            this.expenseForm.amount = null; this.save();
         },
         deleteItem(type, idx) {
-            if(confirm('คุณแน่ใจนะว่าต้องการลบรายการนี้?')) { this[type].splice(idx, 1); this.notify('ลบข้อมูลแล้ว', 'error'); this.save(); }
+            if(confirm('ลบรายการนี้ใช่ไหม?')) { this[type].splice(idx, 1); this.save(); }
         },
         save() {
             localStorage.setItem('rider_v4_4_billing', JSON.stringify({
@@ -280,14 +211,38 @@ createApp({
         },
         renderChart() {
             nextTick(() => {
-                const ctx = document.getElementById('mainChart');
-                if(!ctx) return;
+                const ctx = document.getElementById('mainChart'); if(!ctx) return;
                 if(window.chartObj) window.chartObj.destroy();
                 window.chartObj = new Chart(ctx, {
                     type: 'doughnut',
                     data: {
                         labels: ['รายได้สุทธิ', 'รายจ่ายรวม'],
-                        datasets: [{
-                            data: [this.totalNet, this.totalExpense],
-                            backgroundColor: ['#2563eb', '#f43f5e'],
-                            borderWidth: 8, borderColor: '#fffff
+                        datasets: [{ data: [this.totalNet, this.totalExpense], backgroundColor: ['#2563eb', '#f43f5e'], borderWidth: 8, borderColor: '#ffffff' }]
+                    },
+                    options: { cutout: '85%', maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+                });
+            });
+        }
+    },
+    mounted() {
+        const oldKey = 'rider_v4_3'; const newKey = 'rider_v4_4_billing';
+        let existingNewData = localStorage.getItem(newKey);
+        if(!existingNewData) {
+            let oldRawData = localStorage.getItem(oldKey);
+            if(oldRawData) {
+                let oldData = JSON.parse(oldRawData);
+                this.bills = (oldData.bills || []).map(b => ({...b, price: b.price || 15}));
+                this.expenses = oldData.expenses || [];
+                this.settings = oldData.settings || this.settings;
+                this.save(); this.notify('กู้คืนข้อมูลสำเร็จ!');
+            }
+        } else {
+            let data = JSON.parse(existingNewData);
+            this.bills = data.bills || []; this.expenses = data.expenses || []; this.settings = data.settings || this.settings;
+        }
+        if(this.currentTab === 'summary') this.renderChart();
+    }
+}).mount('#app')
+</script>
+</body>
+</html>
