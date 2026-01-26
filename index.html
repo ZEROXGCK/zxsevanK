@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rider Pro Tracker v4.9 Classic</title>
+    <title>Rider Tracker v4.8 (Alert)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -11,153 +11,135 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
-        body { font-family: 'Kanit', sans-serif; background: #f3f4f6; color: #374151; }
-        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.5); }
-        .modal-overlay { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 1rem; }
-        .tab-active { background: white; color: #2563eb; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .swal2-popup { border-radius: 2rem !important; font-family: 'Kanit', sans-serif !important; }
+        body { font-family: 'Kanit', sans-serif; background: #f8fafc; color: #334155; }
+        .card { background: white; border-radius: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; }
+        .input-flat { background: #f1f5f9; border-radius: 0.75rem; border: 2px solid transparent; transition: all 0.2s; }
+        .input-flat:focus { border-color: #3b82f6; background: white; outline: none; }
+        .btn-price { border: 2px solid #e2e8f0; border-radius: 0.75rem; transition: all 0.2s; font-weight: 600; }
+        .btn-price.active { border-color: #3b82f6; background: #eff6ff; color: #2563eb; }
+        .swal2-popup { border-radius: 1.5rem !important; font-family: 'Kanit', sans-serif !important; }
     </style>
 </head>
-<body class="p-4 md:p-8">
-<div id="app" class="max-w-xl mx-auto relative pb-10">
+<body class="p-4">
+<div id="app" class="max-w-md mx-auto space-y-4">
 
-    <div v-if="isEditing" class="modal-overlay">
-        <div class="glass w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl relative border-white">
-            <button @click="isEditing=false" class="absolute top-6 right-6 text-slate-300"><i class="fa-solid fa-circle-xmark text-2xl"></i></button>
-            <h3 class="text-lg font-bold mb-6 text-blue-600">แก้ไขข้อมูล</h3>
-            <div v-if="editTarget === 'bills'" class="space-y-4">
-                <div class="grid grid-cols-2 gap-3">
-                    <button v-for="p in [12, 15]" @click="editForm.price = p" :class="['py-3 rounded-2xl border-2 font-bold', editForm.price == p ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white text-slate-400']">฿{{p}}</button>
+    <div v-if="isEditing" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="card w-full p-6 space-y-4">
+            <h3 class="font-bold text-lg">แก้ไขรายการ</h3>
+            <div v-if="editTarget === 'bills'" class="space-y-3">
+                <div class="grid grid-cols-2 gap-2">
+                    <button v-for="p in [12, 15]" @click="editForm.price = p" :class="['py-2 btn-price', editForm.price == p ? 'active' : '']">฿{{p}}</button>
                 </div>
-                <input type="number" v-model.number="editForm.count" class="w-full p-4 bg-slate-100 rounded-2xl text-lg font-bold outline-none" placeholder="จำนวนบิล">
-                <button @click="confirmEdit" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg">บันทึกแก้ไข</button>
+                <input type="number" v-model.number="editForm.count" class="w-full p-3 input-flat font-bold text-lg" placeholder="จำนวนบิล">
             </div>
-            <div v-else class="space-y-4">
-                <div class="grid grid-cols-2 gap-3">
-                    <button @click="editForm.type = 'ค่าอาหาร'" :class="['py-3 rounded-2xl border-2 font-bold', editForm.type == 'ค่าอาหาร' ? 'bg-rose-500 border-rose-500 text-white' : 'bg-white text-slate-400']">อาหาร</button>
-                    <button @click="editForm.type = 'ค่าน้ำมัน'" :class="['py-3 rounded-2xl border-2 font-bold', editForm.type == 'ค่าน้ำมัน' ? 'bg-orange-500 border-orange-500 text-white' : 'bg-white text-slate-400']">น้ำมัน</button>
-                </div>
-                <input type="number" v-model.number="editForm.amount" class="w-full p-4 bg-slate-100 rounded-2xl text-lg font-bold outline-none" placeholder="จำนวนเงิน">
-                <button @click="confirmEdit" class="w-full py-4 bg-rose-500 text-white rounded-2xl font-bold shadow-lg">บันทึกแก้ไข</button>
+            <div v-else class="space-y-3">
+                <input type="text" v-model="editForm.type" class="w-full p-3 input-flat" placeholder="รายการ">
+                <input type="number" v-model.number="editForm.amount" class="w-full p-3 input-flat font-bold text-lg" placeholder="จำนวนเงิน">
+            </div>
+            <div class="flex gap-2">
+                <button @click="confirmEdit" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold">บันทึก</button>
+                <button @click="isEditing=false" class="flex-1 py-3 bg-slate-100 rounded-xl font-bold">ยกเลิก</button>
             </div>
         </div>
     </div>
 
-    <header class="flex justify-between items-center mb-6 px-2">
-        <div><h1 class="text-xl font-bold">Rider<span class="text-blue-600">Log</span></h1><p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">v4.9 Classic Alert</p></div>
-        <div class="flex gap-2">
-            <div class="bg-white px-3 py-1 rounded-xl shadow-sm border flex items-center gap-2">
-                <button @click="changeMonth(-1)" class="text-slate-300"><i class="fa-solid fa-chevron-left text-[10px]"></i></button>
-                <span class="text-[11px] font-bold text-slate-600 min-w-[80px] text-center">{{viewMonthLabel}}</span>
-                <button @click="changeMonth(1)" class="text-slate-300"><i class="fa-solid fa-chevron-right text-[10px]"></i></button>
-            </div>
-            <button @click="currentTab = 'settings'" class="w-9 h-9 rounded-xl bg-white flex items-center justify-center text-slate-300 border border-slate-100"><i class="fa-solid fa-gear"></i></button>
+    <header class="flex justify-between items-center py-2">
+        <h1 class="text-xl font-bold text-slate-800">Rider<span class="text-blue-600">Tracker</span></h1>
+        <div class="flex items-center bg-white rounded-xl px-3 py-1 border shadow-sm gap-3">
+            <button @click="changeMonth(-1)" class="text-slate-400"><i class="fa-solid fa-caret-left"></i></button>
+            <span class="text-xs font-bold w-16 text-center">{{viewMonthShort}}</span>
+            <button @click="changeMonth(1)" class="text-slate-400"><i class="fa-solid fa-caret-right"></i></button>
         </div>
     </header>
 
-    <nav class="flex p-1.5 bg-slate-200/50 rounded-2xl mb-6">
-        <button v-for="(label, tab) in {record: 'บันทึกงาน', summary: 'วิเคราะห์'}" @click="currentTab = tab" :class="['flex-1 py-2 text-[13px] font-bold rounded-xl transition-all', currentTab === tab ? 'tab-active' : 'text-slate-400']">{{label}}</button>
-    </nav>
+    <div class="grid grid-cols-2 gap-3">
+        <div class="card p-4 bg-blue-600 text-white shadow-blue-200">
+            <p class="text-[10px] opacity-80 uppercase font-bold">รายได้สุทธิ</p>
+            <h2 class="text-xl font-bold">฿{{monthlyStats.totalNet.toLocaleString()}}</h2>
+        </div>
+        <div class="card p-4 bg-rose-500 text-white shadow-rose-200">
+            <p class="text-[10px] opacity-80 uppercase font-bold">รายจ่ายรวม</p>
+            <h2 class="text-xl font-bold">฿{{monthlyStats.totalExp.toLocaleString()}}</h2>
+        </div>
+    </div>
 
-    <main v-if="currentTab === 'record'" class="space-y-6">
-        <div class="grid grid-cols-2 gap-3">
-            <div class="bg-slate-900 p-5 rounded-[2rem] text-white shadow-xl">
-                <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">บิลรวม {{viewMonthShort}}</p>
-                <h2 class="text-2xl font-bold">{{monthlyStats.totalBills}} บิล</h2>
-            </div>
-            <div class="bg-blue-600 p-5 rounded-[2rem] text-white shadow-xl">
-                <p class="text-[9px] font-bold text-blue-200 uppercase mb-1">รายได้สุทธิ {{viewMonthShort}}</p>
-                <h2 class="text-2xl font-bold">฿{{monthlyStats.totalNet.toLocaleString()}}</h2>
-            </div>
+    <div class="card p-5 space-y-4">
+        <div class="flex bg-slate-100 p-1 rounded-xl">
+            <button @click="subTab='bill'" :class="['flex-1 py-2 text-xs font-bold rounded-lg transition-all', subTab=='bill'?'bg-white shadow-sm text-blue-600':'text-slate-500']">บันทึกงาน</button>
+            <button @click="subTab='expense'" :class="['flex-1 py-2 text-xs font-bold rounded-lg transition-all', subTab=='expense'?'bg-white shadow-sm text-rose-500':'text-slate-500']">บันทึกจ่าย</button>
         </div>
 
-        <div class="glass p-7 rounded-[2.5rem] shadow-sm border border-white">
-            <div class="flex gap-2 p-1 bg-slate-100 rounded-xl mb-6">
-                <button @click="subTab = 'bill'" :class="['flex-1 py-1.5 rounded-lg text-[11px] font-bold', subTab === 'bill' ? 'bg-white text-blue-600' : 'text-slate-400']">ค่ารอบ</button>
-                <button @click="subTab = 'expense'" :class="['flex-1 py-1.5 rounded-lg text-[11px] font-bold', subTab === 'expense' ? 'bg-white text-rose-500' : 'text-slate-400']">รายจ่าย</button>
+        <div v-if="subTab=='bill'" class="space-y-4">
+            <div class="grid grid-cols-2 gap-2">
+                <button v-for="p in [12, 15]" @click="billForm.price=p" :class="['py-2 btn-price', billForm.price==p?'active':'']">฿{{p}}</button>
             </div>
-            
-            <div v-if="subTab === 'bill'" class="space-y-4">
-                <div class="grid grid-cols-2 gap-3">
-                    <button v-for="p in [12, 15]" @click="billForm.price = p" :class="['py-3 rounded-2xl border-2 font-bold', billForm.price === p ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white text-slate-400']">฿{{p}}</button>
-                </div>
-                <input type="number" v-model.number="billForm.count" placeholder="จำนวนบิล" class="w-full p-4 bg-slate-100 rounded-2xl text-xl font-bold outline-none text-center">
-                <button @click="saveBill" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-lg">บันทึกงาน</button>
-            </div>
-
-            <div v-else class="space-y-4">
-                <div class="grid grid-cols-2 gap-3">
-                    <button @click="expenseForm.type = 'ค่าอาหาร'" :class="['py-3 rounded-2xl border-2 font-bold', expenseForm.type === 'ค่าอาหาร' ? 'bg-rose-500 border-rose-500 text-white' : 'bg-white text-slate-400']">ค่าอาหาร</button>
-                    <button @click="expenseForm.type = 'ค่าน้ำมัน'" :class="['py-3 rounded-2xl border-2 font-bold', expenseForm.type === 'ค่าน้ำมัน' ? 'bg-orange-500 border-orange-500 text-white' : 'bg-white text-slate-400']">ค่าน้ำมัน</button>
-                </div>
-                <input type="number" v-model.number="expenseForm.amount" placeholder="ยอดเงิน" class="w-full p-4 bg-slate-100 rounded-2xl text-xl font-bold outline-none text-center">
-                <button @click="saveExpense" class="w-full py-4 bg-rose-500 text-white rounded-2xl font-bold shadow-lg">บันทึกรายจ่าย</button>
-            </div>
+            <input type="number" v-model.number="billForm.count" placeholder="0 บิล" class="w-full p-3 input-flat text-center text-2xl font-bold">
+            <button @click="saveBill" class="w-full py-4 bg-slate-800 text-white rounded-xl font-bold shadow-lg shadow-slate-200 active:scale-95 transition-all">บันทึกรายการ</button>
         </div>
 
-        <div class="space-y-3">
-            <h3 class="text-[11px] font-bold text-slate-400 uppercase px-3 tracking-widest">Payout Prediction</h3>
-            <div class="bg-white rounded-[2rem] overflow-hidden border border-slate-100 shadow-sm">
-                <table class="w-full text-left text-[11px]">
-                    <thead class="bg-slate-50 text-[9px] font-bold text-slate-400 uppercase">
-                        <tr><th class="px-5 py-4">ช่วง</th><th class="text-center">บิล</th><th class="text-right">เข้า</th><th class="px-5 py-4 text-right">จ่าย</th></tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-50">
-                        <tr v-for="cycle in calculatedCycles">
-                            <td class="px-5 py-3.5">{{cycle.startDay}}-{{cycle.endDay}}</td>
-                            <td class="text-center font-bold">{{cycle.totalBill}}</td>
-                            <td class="text-right font-bold text-blue-600">฿{{cycle.totalAmount.toFixed(0)}}</td>
-                            <td class="px-5 py-3.5 text-right font-bold text-emerald-500">{{cycle.payDate}}</td>
-                        </tr>
-                    </tbody>
-                </table>
+        <div v-else class="space-y-4">
+            <div class="grid grid-cols-2 gap-2">
+                <button @click="expenseForm.type='ค่าอาหาร'" :class="['py-2 btn-price', expenseForm.type=='ค่าอาหาร'?'active':'']">ค่าอาหาร</button>
+                <button @click="expenseForm.type='ค่าน้ำมัน'" :class="['py-2 btn-price', expenseForm.type=='ค่าน้ำมัน'?'active':'']">ค่าน้ำมัน</button>
             </div>
+            <input type="number" v-model.number="expenseForm.amount" placeholder="0.00 บาท" class="w-full p-3 input-flat text-center text-2xl font-bold">
+            <button @click="saveExpense" class="w-full py-4 bg-rose-500 text-white rounded-xl font-bold shadow-lg shadow-rose-100 active:scale-95 transition-all">บันทึกจ่าย</button>
         </div>
+    </div>
 
-        <div class="space-y-3">
-            <h3 class="text-[11px] font-bold text-slate-400 uppercase px-3 tracking-widest">History</h3>
-            <div v-for="(item, idx) in combinedHistory" class="flex justify-between items-center bg-white p-4 rounded-2xl border border-white shadow-sm">
-                <div class="flex items-center gap-4">
-                    <div :class="['w-9 h-9 rounded-xl flex items-center justify-center text-[10px]', item.price ? 'bg-blue-50 text-blue-600' : 'bg-rose-50 text-rose-500']">
-                        <i :class="item.price ? 'fa-solid fa-motorcycle' : (item.type == 'ค่าอาหาร' ? 'fa-solid fa-utensils' : 'fa-solid fa-gas-pump')"></i>
-                    </div>
-                    <div><p class="text-[12px] font-bold">{{item.date}}</p><p class="text-[9px] text-slate-400">{{item.price ? item.count + ' บิล' : item.type}}</p></div>
+    <div class="card overflow-hidden">
+        <div class="bg-slate-50 px-4 py-2 border-b">
+            <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ประมาณการยอดโอน</h3>
+        </div>
+        <table class="w-full text-xs">
+            <tbody class="divide-y divide-slate-100">
+                <tr v-for="cycle in calculatedCycles" class="hover:bg-slate-50">
+                    <td class="px-4 py-3 font-medium text-slate-500">{{cycle.startDay}}-{{cycle.endDay}}</td>
+                    <td class="px-4 py-3 font-bold text-slate-700 text-center">{{cycle.totalBill}} บิล</td>
+                    <td class="px-4 py-3 font-bold text-blue-600 text-right">฿{{cycle.totalAmount.toFixed(0)}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="space-y-2">
+        <h3 class="text-[10px] font-bold text-slate-400 uppercase px-1">ประวัติรายการ</h3>
+        <div v-for="(item, idx) in combinedHistory" class="card p-3 flex justify-between items-center transition-all hover:border-blue-200">
+            <div class="flex items-center gap-3">
+                <div :class="['w-10 h-10 rounded-xl flex items-center justify-center text-xs', item.price ? 'bg-blue-50 text-blue-600' : 'bg-rose-50 text-rose-500']">
+                    <i :class="item.price ? 'fa-solid fa-motorcycle' : (item.type=='ค่าอาหาร'?'fa-solid fa-utensils':'fa-solid fa-gas-pump')"></i>
                 </div>
-                <div class="flex items-center gap-3">
-                    <span :class="['text-sm font-bold', item.price ? 'text-slate-700' : 'text-rose-600']">{{item.price ? '฿'+(item.count*item.price*0.97).toFixed(0) : '-฿'+item.amount}}</span>
-                    <button @click="openEdit(item.price ? 'bills' : 'expenses', item.originalIndex)" class="text-slate-200 hover:text-blue-500"><i class="fa-solid fa-pen text-[10px]"></i></button>
-                    <button @click="deleteItem(item.price ? 'bills' : 'expenses', item.originalIndex)" class="text-slate-200 hover:text-rose-500"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                <div>
+                    <p class="text-xs font-bold leading-none mb-1">{{item.date}}</p>
+                    <p class="text-[10px] text-slate-400">{{item.price ? item.count + ' บิล' : item.type}}</p>
                 </div>
             </div>
+            <div class="flex items-center gap-3">
+                <span :class="['text-sm font-bold', item.price ? 'text-slate-700' : 'text-rose-500']">
+                    {{item.price ? '฿'+(item.count*item.price*0.97).toFixed(0) : '-฿'+item.amount}}
+                </span>
+                <button @click="openEdit(item.price ? 'bills' : 'expenses', item.originalIndex)" class="text-slate-300 hover:text-blue-500"><i class="fa-solid fa-pen-to-square text-xs"></i></button>
+                <button @click="deleteItem(item.price ? 'bills' : 'expenses', item.originalIndex)" class="text-slate-300 hover:text-rose-500"><i class="fa-solid fa-trash-can text-xs"></i></button>
+            </div>
         </div>
-    </main>
-
-    <main v-if="currentTab === 'summary'" class="glass p-8 rounded-[3rem] h-[400px] flex flex-col items-center justify-center relative">
-        <canvas id="mainChart"></canvas>
-        <div class="mt-4 text-center">
-            <p class="text-xs font-bold text-slate-400 uppercase">คงเหลือเดือนนี้</p>
-            <p class="text-2xl font-bold text-slate-800">฿{{(monthlyStats.totalNet - monthlyStats.totalExp).toLocaleString()}}</p>
-        </div>
-    </main>
+    </div>
+    
+    <button @click="clearData" class="w-full py-4 text-xs font-bold text-slate-300 uppercase">ล้างข้อมูลทั้งหมด</button>
 </div>
-
-    <script>
-const { createApp, nextTick } = Vue
+<script>
+const { createApp } = Vue
 createApp({
     data() {
         return {
-            currentTab: 'record', subTab: 'bill',
-            isEditing: false, editTarget: '', editIndex: null, editForm: {},
+            subTab: 'bill', isEditing: false, editTarget: '', editIndex: null, editForm: {},
             viewDate: new Date(),
-            billForm: { date: new Date().toISOString().substr(0, 10), count: null, price: 15 },
-            expenseForm: { date: new Date().toISOString().substr(0, 10), amount: null, type: 'ค่าอาหาร' },
-            bills: [], expenses: [],
-            settings: { taxRate: 3, payoutRules: [ {startDay:1, endDay:15, payDay:17}, {startDay:16, endDay:31, payDay:3} ] }
+            billForm: { date: new Date().toISOString().substr(0,10), count: null, price: 15 },
+            expenseForm: { date: new Date().toISOString().substr(0,10), amount: null, type: 'ค่าอาหาร' },
+            bills: [], expenses: []
         }
     },
     computed: {
-        viewMonthLabel() { return this.viewDate.toLocaleDateString('th-TH', { month: 'long', year: 'numeric' }); },
-        viewMonthShort() { return this.viewDate.toLocaleDateString('th-TH', { month: 'short' }); },
+        viewMonthShort() { return this.viewDate.toLocaleDateString('th-TH', { month: 'short', year: 'numeric' }); },
         filteredBills() {
             const m = this.viewDate.getMonth(), y = this.viewDate.getFullYear();
             return this.bills.map((b, i) => ({ ...b, originalIndex: i }))
@@ -172,35 +154,37 @@ createApp({
             return [...this.filteredBills, ...this.filteredExpenses].sort((a,b) => new Date(b.date) - new Date(a.date));
         },
         monthlyStats() {
-            const b = this.filteredBills.reduce((s, i) => s + i.count, 0);
             const n = this.filteredBills.reduce((s, i) => s + (i.count * i.price * 0.97), 0);
             const e = this.filteredExpenses.reduce((s, i) => s + (i.amount || 0), 0);
-            return { totalBills: b, totalNet: n, totalExp: e };
+            return { totalNet: n, totalExp: e };
         },
         calculatedCycles() {
             const m = this.viewDate.getMonth() + 1, y = this.viewDate.getFullYear();
-            return this.settings.payoutRules.map(r => {
-                const s = `${y}-${String(m).padStart(2,'0')}-${String(r.startDay).padStart(2,'0')}`;
-                const e = `${y}-${String(m).padStart(2,'0')}-${String(r.endDay).padStart(2,'0')}`;
-                const cB = this.bills.filter(b => b.date >= s && b.date <= e);
-                return { ...r, totalBill: cB.reduce((sum, b) => sum + b.count, 0), 
-                         totalAmount: cB.reduce((sum, b) => sum + (b.count * b.price * 0.97), 0),
-                         payDate: `${r.payDay} ${this.viewMonthShort}` };
+            const rules = [{s:1, e:15}, {s:16, e:31}];
+            return rules.map(r => {
+                const start = `${y}-${String(m).padStart(2,'0')}-${String(r.s).padStart(2,'0')}`;
+                const end = `${y}-${String(m).padStart(2,'0')}-${String(r.e).padStart(2,'0')}`;
+                const items = this.bills.filter(b => b.date >= start && b.date <= end);
+                return { startDay: r.s, endDay: r.e, totalBill: items.reduce((s,i)=>s+i.count, 0), totalAmount: items.reduce((s,i)=>s+(i.count*i.price*0.97), 0) };
             });
         }
     },
     methods: {
         changeMonth(s) { const d = new Date(this.viewDate); d.setMonth(d.getMonth() + s); this.viewDate = d; },
-        toast(title, icon = 'success') { Swal.fire({ title, icon, toast: true, position: 'top', showConfirmButton: false, timer: 1500 }); },
+        toast(title, icon = 'success') {
+            Swal.fire({ title, icon, toast: true, position: 'top', showConfirmButton: false, timer: 2000, timerProgressBar: true });
+        },
         saveBill() {
             if(!this.billForm.count) return;
             this.bills.unshift({...this.billForm});
-            this.billForm.count = null; this.save(); this.toast('บันทึกสำเร็จ');
+            this.billForm.count = null; this.save();
+            this.toast('บันทึกงานเรียบร้อย');
         },
         saveExpense() {
             if(!this.expenseForm.amount) return;
             this.expenses.unshift({...this.expenseForm});
-            this.expenseForm.amount = null; this.save(); this.toast('บันทึกจ่ายแล้ว');
+            this.expenseForm.amount = null; this.save();
+            this.toast('บันทึกรายจ่ายแล้ว', 'warning');
         },
         openEdit(target, index) {
             this.editTarget = target; this.editIndex = index;
@@ -208,34 +192,24 @@ createApp({
         },
         confirmEdit() {
             this[this.editTarget][this.editIndex] = { ...this.editForm };
-            this.isEditing = false; this.save(); this.toast('แก้ไขแล้ว', 'info');
+            this.isEditing = false; this.save();
+            this.toast('แก้ไขข้อมูลสำเร็จ', 'info');
         },
         async deleteItem(t, i) {
-            const res = await Swal.fire({ title: 'ลบรายการ?', icon: 'warning', showCancelButton: true });
-            if(res.isConfirmed) { this[t].splice(i, 1); this.save(); }
+            const res = await Swal.fire({ title: 'ลบรายการนี้?', icon: 'warning', showCancelButton: true, confirmButtonText: 'ลบเลย', cancelButtonText: 'ยกเลิก' });
+            if(res.isConfirmed) { this[t].splice(i, 1); this.save(); this.toast('ลบออกแล้ว', 'info'); }
         },
-        save() {
-            localStorage.setItem('rider_v4_4_billing', JSON.stringify({ bills: this.bills, expenses: this.expenses }));
-            if(this.currentTab === 'summary') this.renderChart();
-        },
-        renderChart() {
-            nextTick(() => {
-                const ctx = document.getElementById('mainChart'); if(!ctx) return;
-                if(window.chartObj) window.chartObj.destroy();
-                window.chartObj = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: { labels: ['รายได้', 'รายจ่าย'], datasets: [{ data: [this.monthlyStats.totalNet, this.monthlyStats.totalExp], backgroundColor: ['#2563eb', '#f43f5e'], borderWidth: 8, borderColor: '#ffffff' }] },
-                    options: { cutout: '85%', maintainAspectRatio: false }
-                });
+        save() { localStorage.setItem('rider_v4_8_data', JSON.stringify({ bills: this.bills, expenses: this.expenses })); },
+        clearData() {
+            Swal.fire({ title: 'ล้างข้อมูลทั้งหมด?', icon: 'error', showCancelButton: true }).then(r => {
+                if(r.isConfirmed) { localStorage.removeItem('rider_v4_8_data'); location.reload(); }
             });
         }
     },
     mounted() {
-        const d = JSON.parse(localStorage.getItem('rider_v4_4_billing'));
+        const d = JSON.parse(localStorage.getItem('rider_v4_8_data'));
         if(d) { this.bills = d.bills || []; this.expenses = d.expenses || []; }
-        if(this.currentTab === 'summary') this.renderChart();
-    },
-    watch: { currentTab(v) { if(v === 'summary') this.renderChart(); } }
+    }
 }).mount('#app')
 </script>
 </body>
