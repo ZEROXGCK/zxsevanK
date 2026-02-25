@@ -2,185 +2,131 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RIDER LOG PRO - ADVANCED INTERACTION</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>7-11 RIDER LOG PRO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
-        body { font-family: 'Kanit', sans-serif; background: #f4f7fa; color: #1e293b; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Kanit', sans-serif; background: #f1f5f9; color: #1e293b; overflow-x: hidden; }
+        .btn-active:active { transform: scale(0.92); filter: brightness(0.9); }
+        .glass-ui { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.5); }
         
-        /* สไตล์ปุ่มแบบเน้นความรู้สึก (Interactive Button) */
-        .btn-rider {
-            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); /* สปริงเด้งๆ */
-            position: relative;
-            box-shadow: 0 4px 0px rgba(0,0,0,0.1);
-        }
-        .btn-rider:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-            filter: brightness(1.1);
-        }
-        .btn-rider:active {
-            transform: translateY(2px);
-            box-shadow: 0 0px 0px rgba(0,0,0,0); /* เงาจมลงไป */
-            filter: brightness(0.9);
-        }
-
-        /* เอฟเฟกต์หมุนไอคอนตอนแก้ไข */
-        .edit-icon-spin:hover i {
-            transform: rotate(15deg) scale(1.2);
-            transition: transform 0.2s ease;
-        }
-
-        /* Glassmorphism Card */
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 1);
-        }
-
-        /* อนิเมชั่นรายการที่เพิ่มใหม่ */
-        .list-enter {
-            animation: slideIn 0.4s ease-out forwards;
-        }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        /* สไตล์ Custom สำหรับ SweetAlert */
+        .swal2-popup { border-radius: 2rem !important; font-family: 'Kanit', sans-serif !important; }
+        .swal2-styled.swal2-confirm { border-radius: 1rem !important; background-color: #2563eb !important; }
     </style>
 </head>
-<body class="p-4 md:p-8">
-<div id="app" class="max-w-xl mx-auto">
+<body class="p-2 sm:p-4">
+<div id="app" class="max-w-md mx-auto pb-24">
 
-    <div v-if="isEditing" class="fixed inset-0 z-50 flex items-center justify-center p-6">
-        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md" @click="cancelEdit"></div>
-        <div class="glass-panel w-full max-w-sm rounded-[3rem] p-10 shadow-2xl relative z-10 scale-up animate-in duration-300">
-            <h3 class="text-2xl font-black mb-8 text-center flex flex-col items-center">
-                <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-4">
-                    <i class="fa-solid fa-pen-to-square text-2xl"></i>
-                </div>
-                แก้ไขข้อมูลเดิม
-            </h3>
-            <div class="space-y-5">
-                <div class="grid grid-cols-2 gap-4">
+    <div v-if="isEditing" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" @click="cancelEdit"></div>
+        <div class="glass-ui w-full max-w-sm rounded-[2.5rem] p-6 shadow-2xl relative z-10 animate-in slide-in-from-bottom duration-300">
+            <h3 class="text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-edit text-blue-600"></i> แก้ไขข้อมูล</h3>
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-2">
                     <button v-for="p in [12, 15]" @click="billForm.price = p" 
-                        :class="['py-4 rounded-3xl font-black text-xl btn-rider border-2', billForm.price === p ? 'bg-blue-600 border-blue-600 text-white' : 'bg-slate-50 text-slate-400 border-slate-100']">
+                        :class="['py-3 rounded-2xl font-bold border-2 transition-all btn-active', billForm.price === p ? 'bg-blue-600 border-blue-600 text-white shadow-lg' : 'bg-white text-slate-400 border-slate-100']">
                         ฿{{p}}
                     </button>
                 </div>
-                <input type="date" v-model="billForm.date" class="w-full p-5 bg-slate-50 rounded-[2rem] font-bold border-2 border-transparent focus:border-blue-500 outline-none transition-all">
-                <input type="number" v-model.number="billForm.count" class="w-full p-5 bg-slate-50 rounded-[2rem] text-3xl font-black text-center border-2 border-transparent focus:border-blue-500 outline-none" placeholder="0">
-                
-                <div class="flex gap-3 pt-4">
-                    <button @click="cancelEdit" class="flex-1 py-5 bg-slate-200 text-slate-600 rounded-3xl font-bold btn-rider">ยกเลิก</button>
-                    <button @click="saveBill" class="flex-[2] py-5 bg-blue-600 text-white rounded-3xl font-bold text-lg btn-rider shadow-blue-200">
-                        ยืนยันการแก้ไข <i class="fa-solid fa-check ml-2"></i>
-                    </button>
+                <input type="date" v-model="billForm.date" class="w-full p-4 bg-slate-100 rounded-2xl outline-none text-sm">
+                <input type="number" v-model.number="billForm.count" class="w-full p-4 bg-slate-100 rounded-2xl text-xl font-bold text-center" placeholder="จำนวนบิล">
+                <div class="flex gap-2">
+                    <button @click="cancelEdit" class="flex-1 py-4 bg-slate-200 text-slate-600 rounded-2xl font-bold btn-active">ปิด</button>
+                    <button @click="saveBill" class="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg btn-active">บันทึกใหม่</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <header class="flex justify-between items-center mb-8 px-4">
+    <header class="flex justify-between items-center mb-6 px-2 mt-4">
         <div>
-            <h1 class="text-3xl font-black text-slate-800 tracking-tighter">RIDER<span class="text-blue-600">LOG</span></h1>
-            <div class="h-1 w-12 bg-blue-600 rounded-full"></div>
+            <h1 class="text-xl font-black text-slate-800 tracking-tight italic">RIDER<span class="text-blue-600 font-bold">LOG</span></h1>
+            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">v4.8 Mobile Optimized</p>
         </div>
-        <div class="flex gap-3">
-            <button @click="changeMonth(-1)" class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm btn-rider"><i class="fa-solid fa-chevron-left"></i></button>
-            <div class="bg-white px-6 py-3 rounded-2xl shadow-sm border font-black text-sm flex items-center">{{viewMonthLabel}}</div>
-            <button @click="changeMonth(1)" class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm btn-rider"><i class="fa-solid fa-chevron-right"></i></button>
+        <div class="flex gap-2">
+            <button @click="changeMonth(-1)" class="w-8 h-8 flex items-center justify-center bg-white rounded-xl shadow-sm text-slate-400 btn-active"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+            <span class="text-[10px] font-black bg-white px-3 py-2 rounded-xl shadow-sm border">{{viewMonthLabel}}</span>
+            <button @click="changeMonth(1)" class="w-8 h-8 flex items-center justify-center bg-white rounded-xl shadow-sm text-slate-400 btn-active"><i class="fa-solid fa-chevron-right text-xs"></i></button>
         </div>
     </header>
 
-    <main v-if="currentTab === 'record'" class="space-y-8">
-        
-        <div class="grid grid-cols-2 gap-5">
-            <div class="bg-white p-7 rounded-[3rem] shadow-xl border-b-8 border-slate-800">
-                <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 text-center">ออเดอร์สะสม</p>
-                <h2 class="text-4xl font-black text-center text-slate-800">{{monthlyStats.totalBills}}</h2>
+    <main v-if="currentTab === 'record'" class="space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+            <div class="bg-slate-900 p-4 rounded-[1.8rem] text-white shadow-lg">
+                <p class="text-[9px] font-bold text-slate-400 uppercase mb-1 italic">Total Bills</p>
+                <h2 class="text-2xl font-black">{{monthlyStats.totalBills}}</h2>
             </div>
-            <div class="bg-white p-7 rounded-[3rem] shadow-xl border-b-8 border-blue-600">
-                <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 text-center">เงินในกระเป๋า</p>
-                <h2 class="text-4xl font-black text-center text-blue-600">฿{{monthlyStats.totalNet.toLocaleString()}}</h2>
+            <div class="bg-blue-600 p-4 rounded-[1.8rem] text-white shadow-lg">
+                <p class="text-[9px] font-bold text-blue-200 uppercase mb-1 italic">Net Income</p>
+                <h2 class="text-2xl font-black">฿{{monthlyStats.totalNet.toLocaleString()}}</h2>
             </div>
         </div>
 
-        <div class="glass-panel p-10 rounded-[4rem] shadow-2xl">
-            <div class="flex gap-3 mb-8 bg-slate-100 p-2 rounded-[2rem]">
-                <button @click="subTab = 'bill'" :class="['flex-1 py-4 rounded-[1.5rem] font-black transition-all', subTab === 'bill' ? 'bg-white text-blue-600 shadow-md scale-105' : 'text-slate-400']">ค่ารอบ</button>
-                <button @click="subTab = 'expense'" :class="['flex-1 py-4 rounded-[1.5rem] font-black transition-all', subTab === 'expense' ? 'bg-white text-rose-500 shadow-md scale-105' : 'text-slate-400']">รายจ่าย</button>
+        <div class="bg-white p-6 rounded-[2.2rem] shadow-sm border border-slate-100">
+            <div class="flex gap-2 p-1 bg-slate-100 rounded-xl mb-6 text-[11px] font-bold">
+                <button @click="subTab = 'bill'" :class="['flex-1 py-2 rounded-lg transition-all', subTab === 'bill' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400']">ค่ารอบ</button>
+                <button @click="subTab = 'expense'" :class="['flex-1 py-2 rounded-lg transition-all', subTab === 'expense' ? 'bg-white shadow-sm text-rose-500' : 'text-slate-400']">รายจ่าย</button>
             </div>
 
-            <div v-if="subTab === 'bill'" class="space-y-6">
-                <div class="grid grid-cols-2 gap-4">
+            <div v-if="subTab === 'bill'" class="space-y-4">
+                <div class="grid grid-cols-2 gap-2">
                     <button v-for="p in [12, 15]" @click="billForm.price = p" 
-                        :class="['py-5 rounded-3xl font-black text-2xl btn-rider border-2', billForm.price === p ? 'bg-blue-600 border-blue-600 text-white shadow-blue-200' : 'bg-white text-slate-300 border-slate-100']">
+                        :class="['py-3 rounded-2xl font-bold border-2 transition-all btn-active', billForm.price === p ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white text-slate-300 border-slate-100']">
                         ฿{{p}}
                     </button>
                 </div>
-                <div class="flex gap-3">
-                    <input type="date" v-model="billForm.date" class="flex-[1.5] p-5 bg-slate-50 rounded-[2rem] font-bold outline-none border-2 border-transparent focus:border-blue-200">
-                    <input type="number" v-model.number="billForm.count" placeholder="0" class="flex-1 p-5 bg-slate-50 rounded-[2rem] text-3xl font-black text-center outline-none border-2 border-transparent focus:border-blue-200">
+                <div class="flex gap-2">
+                    <input type="date" v-model="billForm.date" class="flex-[1.5] p-3 bg-slate-50 rounded-xl text-xs font-bold outline-none border border-slate-100">
+                    <input type="number" v-model.number="billForm.count" placeholder="บิล" class="flex-1 p-3 bg-slate-50 rounded-xl text-lg font-black text-center outline-none border border-slate-100">
                 </div>
-                <button @click="saveBill" class="w-full py-6 bg-slate-900 text-white rounded-[2.5rem] text-xl font-black btn-rider shadow-lg shadow-slate-200 flex items-center justify-center gap-3">
-                    <i class="fa-solid fa-plus-circle"></i> บันทึกงานวันนี้
-                </button>
+                <button @click="saveBill" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm shadow-xl btn-active">บันทึกงานวันนี้</button>
             </div>
 
-            <div v-else class="space-y-6 text-center">
-                <input type="number" v-model.number="expenseForm.amount" placeholder="0.00" class="w-full p-8 bg-slate-50 rounded-[3rem] text-5xl font-black text-center outline-none border-2 border-transparent focus:border-rose-200">
-                <button @click="saveExpense" class="w-full py-6 bg-rose-500 text-white rounded-[2.5rem] text-xl font-black btn-rider shadow-lg shadow-rose-200">
-                    บันทึกรายจ่าย <i class="fa-solid fa-gas-pump ml-2"></i>
-                </button>
+            <div v-else class="space-y-4">
+                <input type="number" v-model.number="expenseForm.amount" placeholder="ระบุจำนวนเงิน (บาท)" class="w-full p-4 bg-slate-50 rounded-2xl text-2xl font-black text-center outline-none">
+                <button @click="saveExpense" class="w-full py-4 bg-rose-500 text-white rounded-2xl font-bold text-sm shadow-xl btn-active">บันทึกรายจ่าย</button>
             </div>
         </div>
 
-        <div class="space-y-4">
-            <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest ml-6">Recent Activities</h3>
+        <div class="space-y-3 mt-6">
+            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Recent Logs</h3>
             <div v-for="(item, idx) in filteredBills" :key="idx" 
-                class="list-enter glass-panel flex justify-between items-center p-6 rounded-[2.5rem] shadow-sm hover:shadow-lg transition-all border-l-[12px] border-blue-500">
-                <div class="flex items-center gap-5">
-                    <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 font-black text-lg">
-                        ฿{{item.price}}
-                    </div>
+                class="bg-white flex justify-between items-center p-4 rounded-2xl shadow-sm border border-slate-50">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 font-bold text-xs italic">฿{{item.price}}</div>
                     <div>
-                        <p class="text-base font-black text-slate-700">{{item.date}}</p>
-                        <p class="text-xs font-bold text-slate-400">{{item.count}} ออเดอร์</p>
+                        <p class="text-[13px] font-bold text-slate-700">{{item.date}}</p>
+                        <p class="text-[10px] font-bold text-slate-400">{{item.count}} ออเดอร์</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-4">
-                    <span class="text-xl font-black text-slate-800">฿{{(item.count * (item.price || 15) * 0.97).toFixed(0)}}</span>
-                    <div class="flex gap-2">
-                        <button @click="editBill(item.originalIndex)" class="w-11 h-11 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center btn-rider hover:bg-blue-600 hover:text-white">
-                            <i class="fa-solid fa-pen text-xs"></i>
-                        </button>
-                        <button @click="deleteItem('bills', item.originalIndex)" class="w-11 h-11 rounded-full bg-rose-50 text-rose-400 flex items-center justify-center btn-rider hover:bg-rose-500 hover:text-white">
-                            <i class="fa-solid fa-trash text-xs"></i>
-                        </button>
-                    </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-black text-slate-800">฿{{(item.count * (item.price || 15) * 0.97).toFixed(0)}}</span>
+                    <button @click="editBill(item.originalIndex)" class="w-8 h-8 rounded-lg text-slate-300 hover:text-blue-500 transition-all btn-active flex items-center justify-center"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                    <button @click="deleteItem('bills', item.originalIndex)" class="w-8 h-8 rounded-lg text-slate-300 hover:text-rose-500 transition-all btn-active flex items-center justify-center"><i class="fa-solid fa-trash text-[10px]"></i></button>
                 </div>
             </div>
         </div>
     </main>
 
-    <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 px-8 py-5 rounded-[2.5rem] flex gap-12 shadow-2xl z-40">
-        <button @click="currentTab = 'record'" :class="['text-xl transition-all', currentTab === 'record' ? 'text-blue-400 scale-125' : 'text-slate-500']"><i class="fa-solid fa-house"></i></button>
-        <button @click="currentTab = 'summary'" :class="['text-xl transition-all', currentTab === 'summary' ? 'text-blue-400 scale-125' : 'text-slate-500']"><i class="fa-solid fa-chart-pie"></i></button>
-        <button @click="currentTab = 'settings'" :class="['text-xl transition-all', currentTab === 'settings' ? 'text-blue-400 scale-125' : 'text-slate-500']"><i class="fa-solid fa-gear"></i></button>
+    <nav class="fixed bottom-4 left-1/2 -translate-x-1/2 w-[90%] max-w-xs bg-slate-900/90 backdrop-blur px-6 py-4 rounded-[2rem] flex justify-between shadow-2xl z-40">
+        <button @click="currentTab = 'record'" :class="['text-lg transition-all', currentTab === 'record' ? 'text-blue-400 scale-110' : 'text-slate-500']"><i class="fa-solid fa-home"></i></button>
+        <button @click="currentTab = 'summary'" :class="['text-lg transition-all', currentTab === 'summary' ? 'text-blue-400 scale-110' : 'text-slate-500']"><i class="fa-solid fa-chart-bar"></i></button>
+        <button @click="currentTab = 'settings'" :class="['text-lg transition-all', currentTab === 'settings' ? 'text-blue-400 scale-110' : 'text-slate-500']"><i class="fa-solid fa-cog"></i></button>
     </nav>
 </div>
 
 <script>
-const { createApp, nextTick } = Vue
+const { createApp } = Vue
 createApp({
     data() {
         return {
             currentTab: 'record', subTab: 'bill', isEditing: false, editIndex: null,
-            settings: { taxRate: 3, payoutRules: [] },
+            settings: { taxRate: 3 },
             viewDate: new Date(),
             billForm: { date: new Date().toISOString().substr(0, 10), count: null, price: 15 },
             expenseForm: { date: new Date().toISOString().substr(0, 10), amount: null },
@@ -188,7 +134,7 @@ createApp({
         }
     },
     computed: {
-        viewMonthLabel() { return this.viewDate.toLocaleDateString('th-TH', { month: 'long', year: 'numeric' }); },
+        viewMonthLabel() { return this.viewDate.toLocaleDateString('th-TH', { month: 'short', year: 'numeric' }); },
         filteredBills() {
             const m = this.viewDate.getMonth(), y = this.viewDate.getFullYear();
             return this.bills.map((b, i) => ({ ...b, originalIndex: i }))
@@ -205,19 +151,60 @@ createApp({
     },
     methods: {
         changeMonth(s) { const d = new Date(this.viewDate); d.setMonth(d.getMonth() + s); this.viewDate = d; },
+        
         saveBill() {
-            if(!this.billForm.count) return;
-            // เพิ่มสวิทอเรทตอนบันทึกสำเร็จ
-            if(this.isEditing) { this.bills[this.editIndex] = {...this.billForm}; this.isEditing = false; }
-            else { this.bills.unshift({...this.billForm}); }
+            if(!this.billForm.count) {
+                Swal.fire({ icon: 'warning', title: 'กรุณาใส่จำนวนบิล', timer: 1500, showConfirmButton: false });
+                return;
+            }
+
+            if(this.isEditing) {
+                this.bills[this.editIndex] = {...this.billForm};
+                this.isEditing = false;
+                Swal.fire({ icon: 'success', title: 'แก้ไขเรียบร้อย', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+            } else {
+                this.bills.unshift({...this.billForm});
+                Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+            }
             this.billForm.count = null; 
             this.save();
         },
-        editBill(i) { this.editIndex = i; this.billForm = {...this.bills[i]}; this.isEditing = true; },
+
+        editBill(i) {
+            this.editIndex = i;
+            this.billForm = {...this.bills[i]};
+            this.isEditing = true;
+        },
+
         cancelEdit() { this.isEditing = false; },
-        saveExpense() { if(!this.expenseForm.amount) return; this.expenses.unshift({...this.expenseForm}); this.expenseForm.amount = null; this.save(); },
+
+        saveExpense() {
+            if(!this.expenseForm.amount) return;
+            this.expenses.unshift({...this.expenseForm});
+            Swal.fire({ icon: 'error', title: 'บันทึกรายจ่ายแล้ว', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+            this.expenseForm.amount = null;
+            this.save();
+        },
+
+        deleteItem(t, i) {
+            Swal.fire({
+                title: 'ลบรายการนี้?',
+                text: "ลบแล้วกู้คืนไม่ได้นะ!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'ลบเลย!',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    this[t].splice(i, 1);
+                    this.save();
+                    Swal.fire('ลบแล้ว!', '', 'success');
+                }
+            });
+        },
+
         save() {
-            localStorage.setItem('rider_v4_8_ultra', JSON.stringify({ 
+            localStorage.setItem('rider_v4_8_mobile', JSON.stringify({ 
                 bills: this.bills, 
                 expenses: this.expenses, 
                 settings: this.settings 
@@ -225,11 +212,11 @@ createApp({
         }
     },
     mounted() {
-        const d = JSON.parse(localStorage.getItem('rider_v4_8_ultra'));
+        const d = JSON.parse(localStorage.getItem('rider_v4_8_mobile'));
         if(d) { 
             this.bills = d.bills || []; 
             this.expenses = d.expenses || []; 
-            this.settings = d.settings || { taxRate: 3, payoutRules: [] };
+            this.settings = d.settings || { taxRate: 3 };
         }
     }
 }).mount('#app')
