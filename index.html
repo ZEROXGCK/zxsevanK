@@ -291,4 +291,44 @@ createApp({
             this.settings.payoutRules.push({...this.payoutForm});
             this.save();
         },
-        deleteItem(t, i) { if(confirm('
+        deleteItem(t, i) { if(confirm('ต้องการลบรายการนี้หรือไม่?')) { this[t].splice(i, 1); this.save(); } },
+        save() {
+            localStorage.setItem('rider_v4_8_billing', JSON.stringify({ 
+                bills: this.bills, 
+                expenses: this.expenses, 
+                settings: this.settings 
+            }));
+            if(this.currentTab === 'summary') this.renderChart();
+        },
+        renderChart() {
+            nextTick(() => {
+                const ctx = document.getElementById('mainChart'); if(!ctx) return;
+                if(window.chartObj) window.chartObj.destroy();
+                window.chartObj = new Chart(ctx, { 
+                    type: 'doughnut', 
+                    data: { 
+                        labels: ['รายได้สุทธิ', 'รายจ่าย'], 
+                        datasets: [{ 
+                            data: [this.monthlyStats.totalNet, 500], // Mock expense 500
+                            backgroundColor: ['#2563eb', '#f1f5f9'],
+                            borderWidth: 0,
+                            hoverOffset: 10
+                        }] 
+                    },
+                    options: { cutout: '80%', plugins: { legend: { display: false } } }
+                });
+            });
+        }
+    },
+    mounted() {
+        const d = JSON.parse(localStorage.getItem('rider_v4_8_billing'));
+        if(d) { 
+            this.bills = d.bills || []; 
+            this.expenses = d.expenses || []; 
+            this.settings = d.settings || this.settings;
+        }
+    }
+}).mount('#app')
+</script>
+</body>
+</html>
