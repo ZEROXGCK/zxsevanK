@@ -3,42 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>7-11 RIDER LOG PRO V4.8</title>
+    <title>7-11 RIDER LOG V4.8 PRO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
-        body { font-family: 'Kanit', sans-serif; background: #f8fafc; color: #1e293b; overflow-x: hidden; }
-        .btn-active:active { transform: scale(0.92); filter: brightness(0.9); transition: 0.1s; }
+        body { font-family: 'Kanit', sans-serif; background: #f8fafc; color: #1e293b; -webkit-tap-highlight-color: transparent; }
+        .btn-active:active { transform: scale(0.92); filter: brightness(0.9); }
         .glass-ui { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.6); }
-        .swal2-popup { border-radius: 2rem !important; font-family: 'Kanit', sans-serif !important; font-size: 0.9rem !important; }
-        /* สไตล์ปุ่มล่าง */
-        .nav-shadow { box-shadow: 0 -4px 20px rgba(0,0,0,0.05); }
+        .nav-active { color: #2563eb; transform: scale(1.2); }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 0px; }
     </style>
 </head>
 <body class="p-2 sm:p-4">
-<div id="app" class="max-w-md mx-auto pb-28">
+<div id="app" class="max-w-md mx-auto pb-32">
 
     <div v-if="isEditing" class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="cancelEdit"></div>
-        <div class="glass-ui w-full max-w-sm rounded-[2.5rem] p-6 shadow-2xl relative z-10">
-            <h3 class="text-lg font-bold mb-5 flex items-center gap-2 text-blue-600">
-                <i class="fa-solid fa-pen-to-square"></i> แก้ไขรายการ
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="isEditing = false"></div>
+        <div class="glass-ui w-full max-w-sm rounded-[2.5rem] p-6 shadow-2xl relative z-10 animate-in slide-in-from-bottom duration-300">
+            <h3 class="text-lg font-bold mb-4 text-blue-600 flex items-center gap-2">
+                <i class="fa-solid fa-edit"></i> แก้ไขรายการ
             </h3>
             <div class="space-y-4">
                 <div class="grid grid-cols-2 gap-2">
                     <button v-for="p in [12, 15]" @click="billForm.price = p" 
-                        :class="['py-4 rounded-2xl font-bold border-2 transition-all btn-active', billForm.price === p ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-white text-slate-300 border-slate-100']">
-                        ฿{{p}}
-                    </button>
+                        :class="['py-4 rounded-2xl font-bold border-2 btn-active', billForm.price === p ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white text-slate-300 border-slate-100']">฿{{p}}</button>
                 </div>
-                <input type="date" v-model="billForm.date" class="w-full p-4 bg-slate-100 rounded-2xl outline-none text-sm border-0">
-                <input type="number" v-model.number="billForm.count" class="w-full p-4 bg-slate-100 rounded-2xl text-2xl font-black text-center border-0" placeholder="0">
+                <input type="date" v-model="billForm.date" class="w-full p-4 bg-slate-100 rounded-2xl border-0 outline-none">
+                <input type="number" v-model.number="billForm.count" class="w-full p-4 bg-slate-100 rounded-2xl text-2xl font-black text-center border-0" placeholder="จำนวนบิล">
                 <div class="flex gap-2">
-                    <button @click="cancelEdit" class="flex-1 py-4 bg-slate-200 text-slate-600 rounded-2xl font-bold btn-active">ปิด</button>
-                    <button @click="saveBill" class="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg btn-active">บันทึกใหม่</button>
+                    <button @click="isEditing = false" class="flex-1 py-4 bg-slate-200 text-slate-600 rounded-2xl font-bold btn-active">ปิด</button>
+                    <button @click="saveBill" class="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg btn-active">อัปเดตข้อมูล</button>
                 </div>
             </div>
         </div>
@@ -47,73 +45,66 @@
     <header class="flex justify-between items-center mb-6 px-3 mt-4">
         <div>
             <h1 class="text-2xl font-black text-slate-800 tracking-tight italic">RIDER<span class="text-blue-600">LOG</span></h1>
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">v4.8 System Ready</p>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">v4.8 System Plus</p>
         </div>
         <div class="flex gap-2">
-            <button @click="changeMonth(-1)" class="w-10 h-10 flex items-center justify-center bg-white rounded-2xl shadow-sm text-slate-400 btn-active border border-slate-50"><i class="fa-solid fa-chevron-left text-xs"></i></button>
-            <div class="bg-white px-4 py-2 rounded-2xl shadow-sm border border-slate-50 flex flex-col items-center min-w-[90px]">
-                <span class="text-[10px] font-black text-blue-600 leading-none uppercase">{{viewMonthLabel}}</span>
+            <button @click="changeMonth(-1)" class="w-10 h-10 flex items-center justify-center bg-white rounded-2xl shadow-sm text-slate-400 btn-active border border-slate-100"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+            <div class="bg-white px-4 py-2 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center min-w-[100px]">
+                <span class="text-[11px] font-black text-slate-700 uppercase">{{viewMonthLabel}}</span>
             </div>
-            <button @click="changeMonth(1)" class="w-10 h-10 flex items-center justify-center bg-white rounded-2xl shadow-sm text-slate-400 btn-active border border-slate-50"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+            <button @click="changeMonth(1)" class="w-10 h-10 flex items-center justify-center bg-white rounded-2xl shadow-sm text-slate-400 btn-active border border-slate-100"><i class="fa-solid fa-chevron-right text-xs"></i></button>
         </div>
     </header>
 
     <main v-if="currentTab === 'record'" class="space-y-4 animate-in fade-in duration-300">
         <div class="grid grid-cols-2 gap-3">
-            <div class="bg-slate-900 p-5 rounded-[2rem] text-white shadow-xl relative overflow-hidden">
-                <p class="text-[9px] font-bold text-slate-500 uppercase mb-1">บิลทั้งหมด</p>
+            <div class="bg-slate-900 p-5 rounded-[2rem] text-white shadow-xl">
+                <p class="text-[9px] font-bold text-slate-500 uppercase mb-1 italic">Monthly Bills</p>
                 <h2 class="text-3xl font-black">{{monthlyStats.totalBills}}</h2>
             </div>
             <div class="bg-blue-600 p-5 rounded-[2rem] text-white shadow-xl">
-                <p class="text-[9px] font-bold text-blue-200 uppercase mb-1">รายได้สุทธิ</p>
+                <p class="text-[9px] font-bold text-blue-200 uppercase mb-1 italic">Net Income</p>
                 <h2 class="text-3xl font-black">฿{{monthlyStats.totalNet.toLocaleString()}}</h2>
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-50">
-            <div class="flex gap-2 p-1 bg-slate-100 rounded-[1.2rem] mb-6">
-                <button @click="subTab = 'bill'" :class="['flex-1 py-3 rounded-xl font-bold text-xs transition-all', subTab === 'bill' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400']">ค่ารอบ</button>
+        <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100">
+            <div class="flex gap-2 p-1 bg-slate-100 rounded-2xl mb-6">
+                <button @click="subTab = 'bill'" :class="['flex-1 py-3 rounded-xl font-bold text-xs transition-all', subTab === 'bill' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400']">ลงงาน</button>
                 <button @click="subTab = 'expense'" :class="['flex-1 py-3 rounded-xl font-bold text-xs transition-all', subTab === 'expense' ? 'bg-white shadow-sm text-rose-500' : 'text-slate-400']">รายจ่าย</button>
             </div>
 
             <div v-if="subTab === 'bill'" class="space-y-4">
                 <div class="grid grid-cols-2 gap-2">
                     <button v-for="p in [12, 15]" @click="billForm.price = p" 
-                        :class="['py-4 rounded-2xl font-black text-xl border-2 transition-all btn-active', billForm.price === p ? 'bg-blue-600 border-blue-600 text-white shadow-lg' : 'bg-white text-slate-300 border-slate-100']">
-                        ฿{{p}}
-                    </button>
+                        :class="['py-4 rounded-2xl font-black text-xl border-2 btn-active transition-all', billForm.price === p ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-white text-slate-300 border-slate-100']">฿{{p}}</button>
                 </div>
                 <div class="flex gap-2">
                     <input type="date" v-model="billForm.date" class="flex-[1.5] p-4 bg-slate-50 rounded-2xl text-xs font-bold border-0 outline-none">
-                    <input type="number" v-model.number="billForm.count" placeholder="0" class="flex-1 p-4 bg-slate-50 rounded-2xl text-2xl font-black text-center border-0 outline-none">
+                    <input type="number" v-model.number="billForm.count" placeholder="บิล" class="flex-1 p-4 bg-slate-50 rounded-2xl text-2xl font-black text-center border-0 outline-none">
                 </div>
-                <button @click="saveBill" class="w-full py-5 bg-slate-900 text-white rounded-[1.8rem] font-bold btn-active shadow-xl text-sm">
-                    บันทึกรายการบิล
-                </button>
+                <button @click="saveBill" class="w-full py-5 bg-slate-900 text-white rounded-[1.8rem] font-bold btn-active shadow-xl shadow-slate-200">บันทึกรายการ</button>
             </div>
 
-            <div v-else class="space-y-4 text-center">
-                <input type="number" v-model.number="expenseForm.amount" placeholder="0.00" class="w-full p-6 bg-slate-50 rounded-[2rem] text-4xl font-black text-center outline-none border-0">
-                <button @click="saveExpense" class="w-full py-5 bg-rose-500 text-white rounded-[1.8rem] font-bold btn-active shadow-xl text-sm">
-                    บันทึกรายจ่าย
-                </button>
+            <div v-else class="space-y-4">
+                <input type="number" v-model.number="expenseForm.amount" placeholder="ระบุจำนวนเงิน (บาท)" class="w-full p-6 bg-slate-50 rounded-[2rem] text-4xl font-black text-center outline-none border-0">
+                <button @click="saveExpense" class="w-full py-5 bg-rose-500 text-white rounded-[1.8rem] font-bold btn-active shadow-xl">บันทึกรายจ่าย</button>
             </div>
         </div>
 
         <div class="space-y-3 mt-6">
-            <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-widest px-4">รายการล่าสุด</h3>
-            <div v-if="filteredBills.length === 0" class="text-center py-10 text-slate-300 text-sm">ไม่มีข้อมูลเดือนนี้</div>
+            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4 italic">Recent Logs</h3>
             <div v-for="(item, idx) in filteredBills" :key="idx" 
-                class="bg-white flex justify-between items-center p-4 rounded-3xl shadow-sm border border-slate-50 animate-in slide-in-from-bottom-2">
+                class="bg-white flex justify-between items-center p-4 rounded-3xl border border-slate-50 shadow-sm animate-in slide-in-from-bottom-2">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 font-black text-sm italic">฿{{item.price}}</div>
                     <div>
-                        <p class="text-[14px] font-bold text-slate-700 leading-tight">{{item.date}}</p>
-                        <p class="text-[10px] font-bold text-slate-400">{{item.count}} บิล</p>
+                        <p class="text-[13px] font-bold text-slate-700 leading-tight">{{item.date}}</p>
+                        <p class="text-[10px] font-bold text-slate-400">{{item.count}} ออเดอร์</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span class="text-base font-black text-slate-800">฿{{(item.count * (item.price || 15) * 0.97).toFixed(0)}}</span>
+                    <span class="text-base font-black text-slate-800">฿{{(item.count * (item.price || 15) * (1 - settings.taxRate/100)).toFixed(0)}}</span>
                     <div class="flex gap-1">
                         <button @click="editBill(item.originalIndex)" class="w-9 h-9 rounded-xl text-slate-300 hover:text-blue-500 btn-active flex items-center justify-center bg-slate-50"><i class="fa-solid fa-pen text-[10px]"></i></button>
                         <button @click="deleteItem('bills', item.originalIndex)" class="w-9 h-9 rounded-xl text-slate-300 hover:text-rose-500 btn-active flex items-center justify-center bg-slate-50"><i class="fa-solid fa-trash text-[10px]"></i></button>
@@ -123,23 +114,75 @@
         </div>
     </main>
 
-    <main v-if="currentTab === 'settings'" class="p-4 space-y-6">
-        <div class="bg-white p-6 rounded-[2rem] shadow-sm">
-            <h3 class="font-bold text-slate-800 mb-4">การตั้งค่า</h3>
-            <div class="space-y-4">
-                <div>
-                    <label class="text-xs text-slate-400 font-bold mb-1 block uppercase">ภาษีหัก ณ ที่จ่าย (%)</label>
-                    <input type="number" v-model="settings.taxRate" @change="save" class="w-full p-4 bg-slate-50 rounded-xl font-bold border-0">
+    <main v-if="currentTab === 'summary'" class="space-y-4 animate-in fade-in duration-300">
+        <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-50">
+            <h3 class="text-sm font-bold text-slate-800 mb-6 flex items-center gap-2">
+                <i class="fa-solid fa-calendar-check text-blue-600"></i> ประมาณการรอบจ่ายเงิน
+            </h3>
+            <div class="space-y-3">
+                <div v-for="cycle in calculatedCycles" :key="cycle.payDay" 
+                    :class="['p-4 rounded-3xl border transition-all', cycle.totalAmount > 0 ? 'bg-blue-50 border-blue-100' : 'bg-slate-50 border-slate-50 opacity-60']">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter italic">Work Period</p>
+                            <p class="text-sm font-black text-slate-700">{{cycle.startDay}} - {{cycle.endDay}} {{viewMonthShort}}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[10px] font-bold text-blue-400 uppercase tracking-tighter italic">Pay Day</p>
+                            <p class="text-sm font-black text-blue-600 underline">{{cycle.payDate}}</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-end pt-2 border-t border-white/50">
+                        <span class="text-xs font-bold text-slate-400">{{cycle.totalBill}} บิล</span>
+                        <span class="text-xl font-black text-slate-800">฿{{cycle.totalAmount.toLocaleString()}}</span>
+                    </div>
                 </div>
-                <button @click="clearAll" class="w-full py-4 text-rose-500 font-bold text-xs bg-rose-50 rounded-xl">ล้างข้อมูลทั้งหมด</button>
             </div>
         </div>
     </main>
 
-    <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-xs bg-slate-900 px-8 py-5 rounded-[2.5rem] flex justify-between shadow-2xl z-50 nav-shadow">
-        <button @click="currentTab = 'record'" :class="['text-xl transition-all', currentTab === 'record' ? 'text-blue-400 scale-125' : 'text-slate-500']"><i class="fa-solid fa-house"></i></button>
-        <button @click="currentTab = 'summary'" :class="['text-xl transition-all', currentTab === 'summary' ? 'text-blue-400 scale-125' : 'text-slate-500']"><i class="fa-solid fa-chart-pie"></i></button>
-        <button @click="currentTab = 'settings'" :class="['text-xl transition-all', currentTab === 'settings' ? 'text-blue-400 scale-125' : 'text-slate-500']"><i class="fa-solid fa-cog"></i></button>
+    <main v-if="currentTab === 'settings'" class="space-y-4 animate-in fade-in duration-300">
+        <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100">
+            <h3 class="font-black text-slate-800 mb-6 flex items-center gap-2 uppercase text-sm tracking-widest">
+                <i class="fa-solid fa-cog text-blue-600"></i> ตั้งค่าพื้นฐาน
+            </h3>
+            <div class="space-y-6">
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 uppercase block mb-2 px-1">ภาษีหัก ณ ที่จ่าย (%)</label>
+                    <input type="number" v-model="settings.taxRate" @change="save" class="w-full p-4 bg-slate-50 rounded-2xl font-bold border-0 outline-none focus:ring-2 ring-blue-100 transition-all">
+                </div>
+                
+                <hr class="border-slate-50">
+
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center px-1">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">รอบตัดยอด/จ่ายเงิน</label>
+                        <button @click="addPayoutRule" class="text-blue-600 text-[10px] font-bold bg-blue-50 px-3 py-1.5 rounded-xl btn-active">+ เพิ่มรอบ</button>
+                    </div>
+                    
+                    <div v-for="(p, idx) in settings.payoutRules" :key="idx" class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-white">
+                        <div class="text-xs font-bold text-slate-600">
+                            วันที่ {{p.startDay}}-{{p.endDay}} <i class="fa-solid fa-arrow-right mx-1 opacity-20"></i> <span class="text-blue-600">จ่ายวันที่ {{p.payDay}}</span>
+                        </div>
+                        <button @click="settings.payoutRules.splice(idx,1);save()" class="w-8 h-8 rounded-xl bg-rose-50 text-rose-400 flex items-center justify-center btn-active"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+
+                    <div class="bg-blue-50/50 p-4 rounded-3xl border border-dashed border-blue-100 grid grid-cols-3 gap-2">
+                        <div class="text-center"><p class="text-[9px] font-bold text-slate-400 mb-1">เริ่มวันที่</p><input type="number" v-model.number="payoutForm.startDay" class="w-full bg-white rounded-xl p-2 text-center text-xs font-bold outline-none border-0 shadow-sm"></div>
+                        <div class="text-center"><p class="text-[9px] font-bold text-slate-400 mb-1">ถึงวันที่</p><input type="number" v-model.number="payoutForm.endDay" class="w-full bg-white rounded-xl p-2 text-center text-xs font-bold outline-none border-0 shadow-sm"></div>
+                        <div class="text-center"><p class="text-[9px] font-bold text-slate-400 mb-1">จ่ายวันที่</p><input type="number" v-model.number="payoutForm.payDay" class="w-full bg-white rounded-xl p-2 text-center text-xs font-bold outline-none border-0 shadow-sm"></div>
+                    </div>
+                </div>
+
+                <button @click="clearData" class="w-full py-4 text-rose-500 font-bold text-[10px] uppercase tracking-widest bg-rose-50 rounded-2xl btn-active mt-4">ล้างข้อมูลแอปทั้งหมด</button>
+            </div>
+        </div>
+    </main>
+
+    <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[85%] max-w-xs bg-slate-900 px-8 py-5 rounded-[2.5rem] flex justify-between shadow-2xl z-50">
+        <button @click="currentTab = 'record'" :class="['text-xl transition-all btn-active', currentTab === 'record' ? 'text-blue-400 scale-125' : 'text-slate-500']"><i class="fa-solid fa-house"></i></button>
+        <button @click="currentTab = 'summary'" :class="['text-xl transition-all btn-active', currentTab === 'summary' ? 'text-blue-400 scale-125' : 'text-slate-500']"><i class="fa-solid fa-calendar-day"></i></button>
+        <button @click="currentTab = 'settings'" :class="['text-xl transition-all btn-active', currentTab === 'settings' ? 'text-blue-400 scale-125' : 'text-slate-500']"><i class="fa-solid fa-cog"></i></button>
     </nav>
 
 </div>
@@ -150,15 +193,20 @@ createApp({
     data() {
         return {
             currentTab: 'record', subTab: 'bill', isEditing: false, editIndex: null,
-            settings: { taxRate: 3 },
+            settings: { taxRate: 3, payoutRules: [
+                {startDay: 1, endDay: 15, payDay: 17},
+                {startDay: 16, endDay: 31, payDay: 2}
+            ]},
             viewDate: new Date(),
             billForm: { date: new Date().toISOString().substr(0, 10), count: null, price: 15 },
             expenseForm: { date: new Date().toISOString().substr(0, 10), amount: null },
+            payoutForm: { startDay: 1, endDay: 15, payDay: 17 },
             bills: [], expenses: []
         }
     },
     computed: {
-        viewMonthLabel() { return this.viewDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }); },
+        viewMonthLabel() { return this.viewDate.toLocaleDateString('th-TH', { month: 'long', year: 'numeric' }); },
+        viewMonthShort() { return this.viewDate.toLocaleDateString('th-TH', { month: 'short' }); },
         filteredBills() {
             const m = this.viewDate.getMonth(), y = this.viewDate.getFullYear();
             return this.bills.map((b, i) => ({ ...b, originalIndex: i }))
@@ -169,30 +217,53 @@ createApp({
         },
         monthlyStats() {
             const b = this.filteredBills.reduce((s, i) => s + i.count, 0);
-            const n = this.filteredBills.reduce((s, i) => s + (i.count * (i.price || 15) * (1 - (this.settings.taxRate/100))), 0);
+            const n = this.filteredBills.reduce((s, i) => s + (i.count * (i.price || 15) * (1 - this.settings.taxRate/100)), 0);
             return { totalBills: b, totalNet: Math.floor(n) };
+        },
+        calculatedCycles() {
+            const m = this.viewDate.getMonth() + 1, y = this.viewDate.getFullYear();
+            return this.settings.payoutRules.map(r => {
+                const s = `${y}-${String(m).padStart(2,'0')}-${String(r.startDay).padStart(2,'0')}`;
+                const e = `${y}-${String(m).padStart(2,'0')}-${String(r.endDay).padStart(2,'0')}`;
+                const cB = this.bills.filter(b => b.date >= s && b.date <= e);
+                const tax = 1 - (this.settings.taxRate / 100);
+                
+                // คำนวณเดือนที่เงินเข้า (ถ้าวันที่จ่ายน้อยกว่าวันที่เริ่ม แปลว่าเงินเข้าเดือนถัดไป)
+                let pMonth = this.viewMonthShort;
+                if(r.payDay < r.startDay) {
+                    const nextMonth = new Date(this.viewDate);
+                    nextMonth.setMonth(nextMonth.getMonth() + 1);
+                    pMonth = nextMonth.toLocaleDateString('th-TH', { month: 'short' });
+                }
+
+                return { 
+                    ...r, 
+                    totalBill: cB.reduce((sum, b) => sum + b.count, 0), 
+                    totalAmount: Math.floor(cB.reduce((sum, b) => sum + (b.count * (b.price || 15) * tax), 0)),
+                    payDate: `${r.payDay} ${pMonth}` 
+                };
+            }).sort((a,b) => a.startDay - b.startDay);
         }
     },
     methods: {
         changeMonth(s) { const d = new Date(this.viewDate); d.setMonth(d.getMonth() + s); this.viewDate = d; },
         saveBill() {
-            if(!this.billForm.count || this.billForm.count <= 0) {
-                Swal.fire({ icon: 'warning', title: 'ระบุจำนวนบิล', toast: true, position: 'top', showConfirmButton: false, timer: 1500 });
+            if(!this.billForm.count) {
+                Swal.fire({ icon: 'warning', title: 'ใส่จำนวนบิลด้วยครับ', toast: true, position: 'top', showConfirmButton: false, timer: 1500 });
                 return;
             }
             if(this.isEditing) {
                 this.bills[this.editIndex] = {...this.billForm};
                 this.isEditing = false;
-                Swal.fire({ icon: 'success', title: 'อัปเดตเรียบร้อย', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+                Swal.fire({ icon: 'success', title: 'อัปเดตงานเรียบร้อย', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
             } else {
                 this.bills.unshift({...this.billForm});
-                Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+                Swal.fire({ icon: 'success', title: 'บันทึกงานสำเร็จ!', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
             }
             this.billForm.count = null; 
             this.save();
         },
         editBill(i) { this.editIndex = i; this.billForm = {...this.bills[i]}; this.isEditing = true; },
-        cancelEdit() { this.isEditing = false; },
         saveExpense() {
             if(!this.expenseForm.amount) return;
             this.expenses.unshift({...this.expenseForm});
@@ -200,40 +271,49 @@ createApp({
             this.expenseForm.amount = null;
             this.save();
         },
+        addPayoutRule() {
+            this.settings.payoutRules.push({...this.payoutForm});
+            this.save();
+            Swal.fire({ icon: 'success', title: 'เพิ่มรอบใหม่แล้ว', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
+        },
         deleteItem(t, i) {
             Swal.fire({
-                title: 'ยืนยันการลบ?',
+                title: 'ลบรายการนี้?',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#2563eb',
-                confirmButtonText: 'ลบรายการ',
+                confirmButtonText: 'ลบเลย',
                 cancelButtonText: 'ยกเลิก',
                 reverseButtons: true
             }).then((result) => {
                 if (result.isConfirmed) {
                     this[t].splice(i, 1);
                     this.save();
-                    Swal.fire({ icon: 'success', title: 'ลบแล้ว', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
                 }
             });
         },
-        clearAll() {
-            if(confirm('ลบข้อมูลทั้งหมดถาวร?')) { localStorage.clear(); location.reload(); }
+        clearData() {
+            Swal.fire({
+                title: 'ล้างข้อมูลทั้งหมด?',
+                text: "ข้อมูลงานที่บันทึกไว้จะหายถาวร!",
+                icon: 'error',
+                showCancelButton: true,
+                confirmButtonText: 'ตกลง, ล้างข้อมูล',
+                cancelButtonText: 'ยกเลิก'
+            }).then((res) => { if(res.isConfirmed) { localStorage.clear(); location.reload(); } });
         },
         save() {
-            localStorage.setItem('rider_v4_8_final', JSON.stringify({ 
-                bills: this.bills, 
-                expenses: this.expenses, 
-                settings: this.settings 
+            localStorage.setItem('rider_pro_v48_final', JSON.stringify({ 
+                bills: this.bills, expenses: this.expenses, settings: this.settings 
             }));
         }
     },
     mounted() {
-        const d = JSON.parse(localStorage.getItem('rider_v4_8_final'));
+        const d = JSON.parse(localStorage.getItem('rider_pro_v48_final'));
         if(d) { 
             this.bills = d.bills || []; 
             this.expenses = d.expenses || []; 
-            this.settings = d.settings || { taxRate: 3 };
+            this.settings = d.settings || this.settings;
         }
     }
 }).mount('#app')
