@@ -104,9 +104,13 @@
                     <input type="date" v-model="billForm.date" class="p-4 bg-slate-50 rounded-2xl text-xs font-bold outline-none border border-transparent focus:border-blue-200 transition-all">
                     <input type="number" v-model.number="billForm.count" placeholder="กี่บิล?" class="p-4 bg-slate-50 rounded-2xl text-xl font-bold outline-none border border-transparent focus:border-blue-200 transition-all text-center">
                 </div>
-                <button @click="saveBill" class="w-full py-5 bg-slate-900 text-white rounded-[1.8rem] font-bold shadow-xl hover-glow-dark active:scale-95">
-                    บันทึกรายการบิล
-                </button>
+                <button class="bg-blue-600 text-white px-6 py-2 rounded-xl 
+               transition-all duration-200 
+               hover:bg-blue-700 hover:shadow-lg 
+               active:scale-90 active:ring-2 active:ring-blue-300">
+  บันทึกข้อมูล
+</button>
+
             </div>
 
             <div v-else class="space-y-4">
