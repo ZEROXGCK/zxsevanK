@@ -72,7 +72,24 @@
             </div>
     </div>
 
+    
     <script>
+        // เพิ่มโค้ดนี้เพื่อรองรับการติดตั้งแอป (PWA)
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('data:text/javascript;base64,' + btoa('self.addEventListener("fetch", (e) => { e.respondWith(fetch(e.request)); });'))
+        .catch(err => console.log('Service Worker registration failed: ', err));
+    });
+}
+
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    // คุณสามารถสร้างปุ่ม "ติดตั้ง" ในหน้าเว็บแล้วให้เรียกใช้ deferredPrompt.prompt() ได้ที่นี่
+    console.log('พร้อมสำหรับการติดตั้งแล้ว!');
+});
+        
         let logs = JSON.parse(localStorage.getItem('rider_logs')) || [];
         let cycles = JSON.parse(localStorage.getItem('rider_cycles')) || [];
 
