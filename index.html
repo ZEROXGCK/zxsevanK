@@ -3,231 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RiderLog V5.0</title>
-    <link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#2563eb">
-<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1048/1048329.png">
+    <title>RiderLog V5.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #f1f5f9; }
-        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
+        body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        .glass-card { background: white; border-radius: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        /* สไตล์ปุ่มสลับเรท */
+        .rate-selector { display: flex; background: #f1f5f9; padding: 4px; border-radius: 1rem; margin-bottom: 1.5rem; }
+        .rate-btn { flex: 1; padding: 10px; border-radius: 0.8rem; text-align: center; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .rate-btn.active { background: white; color: #2563eb; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body class="pb-20">
 
-    <div class="p-6 bg-white flex justify-between items-center shadow-sm">
+    <div class="p-6 flex justify-between items-center">
         <div>
-            <h1 class="text-2xl font-bold text-blue-600">RiderLog</h1>
-            <p class="text-xs text-gray-400">V5.0 PAYROLL EDITION</p>
+            <h1 class="text-2xl font-bold text-slate-800">RiderLog</h1>
+            <p class="text-xs text-blue-500 font-bold uppercase tracking-widest">Cloud Sync Active</p>
         </div>
-        <button onclick="toggleSettings()" class="p-2 bg-gray-100 rounded-full">⚙️</button>
-    </div>
-
-    <div class="p-4 grid grid-cols-2 gap-4">
-        <div class="glass-card p-4 rounded-3xl shadow-sm bg-slate-900 text-white">
-            <p class="text-xs opacity-70">จำนวนบิลเดือนนี้</p>
-            <h2 id="total-bills" class="text-2xl font-bold">0 บิล</h2>
-        </div>
-        <div class="glass-card p-4 rounded-3xl shadow-sm bg-blue-600 text-white">
-            <p class="text-xs opacity-70">รายได้สุทธิ (หัก 1%)</p>
-            <h2 id="total-net" class="text-2xl font-bold">฿0.00</h2>
-        </div>
-    </div>
-
-    <div class="px-4">
-        <div class="bg-white p-6 rounded-3xl shadow-sm mb-6">
-            <div class="flex gap-2 mb-4">
-                <button class="flex-1 py-2 rounded-xl bg-blue-100 text-blue-600 font-bold border-2 border-blue-600">บิลละ 15</button>
-            </div>
-            <div class="grid grid-cols-2 gap-2 mb-4">
-                <input type="date" id="work-date" class="bg-gray-50 p-3 rounded-xl border-none">
-                <input type="number" id="bill-input" placeholder="จำนวนบิล" class="bg-gray-50 p-3 rounded-xl border-none">
-            </div>
-            <button onclick="saveWork()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-lg active:scale-95 transition-all">บันทึกรายการ</button>
-        </div>
-    </div>
-      <div id="settings-section" class="hidden px-4 mb-6">
-        <div class="bg-blue-50 p-6 rounded-3xl border-2 border-dashed border-blue-200">
-            <h3 class="font-bold mb-3 text-blue-800 text-lg">ตั้งค่ารอบการจ่ายเงิน</h3>
-            <div class="space-y-2">
-                <input type="text" id="cycle-name" placeholder="ชื่อรอบ (เช่น รอบที่ 1)" class="w-full p-2 rounded-lg border-none">
-                <div class="flex gap-2">
-                    <input type="date" id="cycle-start" class="w-1/2 p-2 rounded-lg border-none">
-                    <input type="date" id="cycle-end" class="w-1/2 p-2 rounded-lg border-none">
-                </div>
-                <input type="date" id="cycle-payday" class="w-full p-2 rounded-lg border-none" title="วันเงินออก">
-                <button onclick="addCycle()" class="w-full py-2 bg-blue-600 text-white rounded-lg font-bold">เพิ่มรอบการจ่าย</button>
-            </div>
-            <div id="cycle-list" class="mt-4 space-y-2"></div>
-        </div>
+        <button onclick="toggleSettings()" class="p-3 bg-white shadow-sm rounded-2xl text-xl">⚙️</button>
     </div>
 
     <div class="px-4 mb-6">
-        <h3 class="text-sm font-bold text-gray-400 mb-3 uppercase">Payout Prediction</h3>
-        <div id="payout-container" class="bg-white rounded-3xl p-4 shadow-sm space-y-3">
+        <div class="bg-slate-900 rounded-[2.5rem] p-6 text-white shadow-2xl">
+            <p class="opacity-60 text-sm mb-1">รายได้สุทธิ (หัก 1% แล้ว)</p>
+            <h2 id="total-net" class="text-4xl font-bold">฿0.00</h2>
+            <div class="mt-4 pt-4 border-t border-white/10 flex justify-between text-sm">
+                <span>จำนวนบิลเดือนนี้: <b id="total-bills">0</b></span>
+                <span class="text-red-400">ภาษีสะสม: <b id="total-tax">฿0</b></span>
             </div>
+        </div>
     </div>
 
     <div class="px-4">
-        <h3 class="text-sm font-bold text-gray-400 mb-3 uppercase">History</h3>
-        <div id="history-list" class="space-y-3">
+        <div class="glass-card p-6 mb-6">
+            <label class="text-sm font-bold text-gray-400 mb-3 block">เลือกเรทราคาวันนี้</label>
+            <div class="rate-selector">
+                <div id="btn-15" class="rate-btn active" onclick="setRate(15)">15 บาท</div>
+                <div id="btn-18" class="rate-btn" onclick="setRate(18)">18 บาท</div>
+                <div id="btn-20" class="rate-btn" onclick="setRate(20)">20 บาท</div>
             </div>
+
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="space-y-1">
+                    <label class="text-[10px] text-gray-400 ml-2">วันที่วิ่งงาน</label>
+                    <input type="date" id="work-date" class="w-full bg-gray-50 p-3 rounded-2xl border-none outline-none focus:ring-2 ring-blue-500">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] text-gray-400 ml-2">จำนวนบิล</label>
+                    <input type="number" id="bill-input" placeholder="0" class="w-full bg-gray-50 p-3 rounded-2xl border-none outline-none focus:ring-2 ring-blue-500 text-center text-xl font-bold">
+                </div>
+            </div>
+
+            <button onclick="saveWork()" id="save-btn" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-200 active:scale-95 transition-all flex justify-center items-center">
+                <span>บันทึกลง Google Sheets</span>
+            </button>
+        </div>
     </div>
 
-    
+    <div id="settings-section" class="hidden px-4 mb-6">
+        </div>
+
+    <div class="px-4 mb-6">
+        <h3 class="text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider">ประวัติการวิ่งงาน</h3>
+        <div id="history-list" class="space-y-3"></div>
+    </div>
+
     <script>
-        // เพิ่มโค้ดนี้เพื่อรองรับการติดตั้งแอป (PWA)
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('data:text/javascript;base64,' + btoa('self.addEventListener("fetch", (e) => { e.respondWith(fetch(e.request)); });'))
-        .catch(err => console.log('Service Worker registration failed: ', err));
-    });
-}
-
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    // คุณสามารถสร้างปุ่ม "ติดตั้ง" ในหน้าเว็บแล้วให้เรียกใช้ deferredPrompt.prompt() ได้ที่นี่
-    console.log('พร้อมสำหรับการติดตั้งแล้ว!');
-});
-        
+        let currentRate = 15;
         let logs = JSON.parse(localStorage.getItem('rider_logs')) || [];
-        let cycles = JSON.parse(localStorage.getItem('rider_cycles')) || [];
+        const webAppUrl = "https://script.google.com/macros/s/AKfycbwunuxleAlqYXpJto9eHlam0keiN85xmkddixDvjzCSRtr-cIxHxaWFzKuubjMq8DOU/exec";
 
-        // ตั้งค่าวันที่เริ่มต้นเป็นวันนี้
         document.getElementById('work-date').valueAsDate = new Date();
 
-        function toggleSettings() {
-            const section = document.getElementById('settings-section');
-            section.classList.toggle('hidden');
-        }
-
-        function addCycle() {
-            const name = document.getElementById('cycle-name').value;
-            const start = document.getElementById('cycle-start').value;
-            const end = document.getElementById('cycle-end').value;
-            const payday = document.getElementById('cycle-payday').value;
-
-            if(!name || !start || !end) return alert('กรุณากรอกข้อมูลรอบจ่ายให้ครบ');
-
-            cycles.push({ id: Date.now(), name, start, end, payday });
-            localStorage.setItem('rider_cycles', JSON.stringify(cycles));
-            renderAll();
+        function setRate(rate) {
+            currentRate = rate;
+            // สลับคลาส active ของปุ่ม
+            document.querySelectorAll('.rate-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('btn-' + rate).classList.add('active');
         }
 
         async function saveWork() {
-    const date = document.getElementById('work-date').value;
-    const bills = parseInt(document.getElementById('bill-input').value);
-    const selectedCycle = "รอบปัจจุบัน"; // หรือดึงจากตัวแปรที่คุณตั้งค่าไว้
+            const date = document.getElementById('work-date').value;
+            const bills = parseInt(document.getElementById('bill-input').value);
+            const saveBtn = document.getElementById('save-btn');
 
-    if(!date || !bills) return alert('กรุณากรอกข้อมูลให้ครบ');
+            if(!date || !bills) return alert('กรุณากรอกบิลด้วยครับ');
 
-    // คำนวณรายได้หัก 1%
-    const gross = bills * 15;
-    const tax = gross * 0.01;
-    const net = gross - tax;
+            const gross = bills * currentRate;
+            const tax = gross * 0.01;
+            const net = gross - tax;
 
-    const data = {
-        date: date,
-        bills: bills,
-        gross: gross,
-        tax: tax,
-        net: net,
-        cycleName: selectedCycle
-    };
+            const data = { date, bills, gross, tax, net, rate: currentRate };
 
-    // URL ที่ได้จากการ Deploy ในขั้นตอนที่ 1
-    const webAppUrl = "https://script.google.com/macros/s/AKfycbwunuxleAlqYXpJto9eHlam0keiN85xmkddixDvjzCSRtr-cIxHxaWFzKuubjMq8DOU/exec";
+            // เปลี่ยนสถานะปุ่มตอนกำลังบันทึก
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = "กำลังส่งข้อมูล... ⏳";
+            saveBtn.classList.replace('bg-blue-600', 'bg-gray-400');
 
-    try {
-        // ส่งข้อมูลไป Google Sheets
-        await fetch(webAppUrl, {
-            method: "POST",
-            mode: "no-cors",
-            body: JSON.stringify(data)
-        });
+            try {
+                // ส่งไป Cloud (Google Sheets)
+                await fetch(webAppUrl, {
+                    method: "POST",
+                    mode: "no-cors",
+                    body: JSON.stringify(data)
+                });
 
-        // บันทึกลงเครื่อง (เผื่อไว้ดูออฟไลน์)
-        logs.push({ id: Date.now(), ...data });
-        localStorage.setItem('rider_logs', JSON.stringify(logs));
-
-        alert("บันทึกสำเร็จ! ข้อมูลถูกเก็บใน Google Sheets แล้ว");
-        renderAll();
-    } catch (e) {
-        alert("บันทึกออนไลน์ขัดข้อง แต่เก็บในเครื่องให้แล้ว");
-    }
-}
-
-
-        function deleteLog(id) {
-            logs = logs.filter(l => l.id !== id);
-            localStorage.setItem('rider_logs', JSON.stringify(logs));
-            renderAll();
+                // บันทึกในเครื่อง
+                logs.push({ id: Date.now(), ...data });
+                localStorage.setItem('rider_logs', JSON.stringify(logs));
+                
+                alert('บันทึกลง Sheet สำเร็จแล้ว!');
+                document.getElementById('bill-input').value = '';
+                renderAll();
+            } catch (e) {
+                alert('ส่งข้อมูลไม่สำเร็จ แต่บันทึกในเครื่องให้แล้ว');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = "บันทึกลง Google Sheets";
+                saveBtn.classList.replace('bg-gray-400', 'bg-blue-600');
+            }
         }
 
-        function deleteCycle(id) {
-            cycles = cycles.filter(c => c.id !== id);
-            localStorage.setItem('rider_cycles', JSON.stringify(cycles));
-            renderAll();
-        }
         function renderAll() {
-            // Render Dashboard
             const totalB = logs.reduce((sum, l) => sum + l.bills, 0);
             const totalN = logs.reduce((sum, l) => sum + l.net, 0);
-            document.getElementById('total-bills').innerText = `${totalB} บิล`;
-            document.getElementById('total-net').innerText = `฿${totalN.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            const totalT = logs.reduce((sum, l) => sum + l.tax, 0);
 
-            // Render History
+            document.getElementById('total-bills').innerText = totalB;
+            document.getElementById('total-net').innerText = `฿${totalN.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            document.getElementById('total-tax').innerText = `฿${totalT.toLocaleString()}`;
+
             document.getElementById('history-list').innerHTML = logs.sort((a,b) => new Date(b.date) - new Date(a.date)).map(l => `
-                <div class="bg-white p-4 rounded-2xl shadow-sm flex justify-between items-center">
+                <div class="bg-white p-4 rounded-3xl shadow-sm flex justify-between items-center">
                     <div>
-                        <p class="text-xs text-gray-400">${l.date}</p>
-                        <p class="font-bold text-slate-700">${l.bills} บิล <span class="text-[10px] text-red-400 ml-2">หัก 1%: ฿${l.tax.toFixed(2)}</span></p>
+                        <p class="text-[10px] text-gray-400">${l.date} (เรท ${l.rate})</p>
+                        <p class="font-bold text-slate-700">${l.bills} บิล <span class="text-[10px] text-red-400 ml-2">-1%: ฿${l.tax.toFixed(2)}</span></p>
                     </div>
                     <div class="text-right">
                         <p class="font-bold text-blue-600 text-lg">฿${l.net.toLocaleString()}</p>
-                        <button onclick="deleteLog(${l.id})" class="text-[10px] text-gray-300">ลบ</button>
                     </div>
-                </div>
-            `).join('');
-
-            // Render Payout Prediction
-            document.getElementById('payout-container').innerHTML = cycles.map(c => {
-                const cycleBills = logs.filter(l => l.date >= c.start && l.date <= c.end).reduce((sum, l) => sum + l.net, 0);
-                return `
-                    <div class="flex justify-between items-center border-b border-gray-50 pb-2">
-                        <div>
-                            <p class="font-bold text-slate-700 text-sm">${c.name}</p>
-                            <p class="text-[10px] text-gray-400">${c.start} ถึง ${c.end}</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="font-bold text-blue-600">฿${cycleBills.toLocaleString()}</p>
-                            <p class="text-[10px] text-green-500 font-bold">จ่าย: ${c.payday || '-'}</p>
-                        </div>
-                    </div>
-                `;
-            }).join('') || '<p class="text-center text-gray-400 text-xs">ยังไม่มีการตั้งค่ารอบจ่าย</p>';
-
-            // Render Cycle Settings List
-            document.getElementById('cycle-list').innerHTML = cycles.map(c => `
-                <div class="flex justify-between bg-white p-2 rounded-lg text-xs">
-                    <span>${c.name}</span>
-                    <button onclick="deleteCycle(${c.id})" class="text-red-400">ลบ</button>
                 </div>
             `).join('');
         }
 
+        function toggleSettings() {
+            const s = document.getElementById('settings-section');
+            s.classList.toggle('hidden');
+        }
+
         renderAll();
     </script>
-    <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js')
-      .then(() => console.log("Service Worker Registered"))
-      .catch(err => console.log("Service Worker Failed", err));
-  }
-    </script>
-    
 </body>
 </html>
