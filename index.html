@@ -117,22 +117,49 @@ window.addEventListener('beforeinstallprompt', (e) => {
             renderAll();
         }
 
-        function saveWork() {
-            const date = document.getElementById('work-date').value;
-            const bills = parseInt(document.getElementById('bill-input').value);
+        async function saveWork() {
+    const date = document.getElementById('work-date').value;
+    const bills = parseInt(document.getElementById('bill-input').value);
+    const selectedCycle = "รอบปัจจุบัน"; // หรือดึงจากตัวแปรที่คุณตั้งค่าไว้
 
-            if(!date || !bills) return alert('กรุณากรอกข้อมูลให้ครบ');
+    if(!date || !bills) return alert('กรุณากรอกข้อมูลให้ครบ');
 
-            const gross = bills * 15;
-            const tax = gross * 0.01;
-            const net = gross - tax;
+    // คำนวณรายได้หัก 1%
+    const gross = bills * 15;
+    const tax = gross * 0.01;
+    const net = gross - tax;
 
-            logs.push({ id: Date.now(), date, bills, gross, tax, net });
-            localStorage.setItem('rider_logs', JSON.stringify(logs));
-            
-            document.getElementById('bill-input').value = '';
-            renderAll();
-        }
+    const data = {
+        date: date,
+        bills: bills,
+        gross: gross,
+        tax: tax,
+        net: net,
+        cycleName: selectedCycle
+    };
+
+    // URL ที่ได้จากการ Deploy ในขั้นตอนที่ 1
+    const webAppUrl = "https://script.google.com/macros/s/AKfycbwunuxleAlqYXpJto9eHlam0keiN85xmkddixDvjzCSRtr-cIxHxaWFzKuubjMq8DOU/exec";
+
+    try {
+        // ส่งข้อมูลไป Google Sheets
+        await fetch(webAppUrl, {
+            method: "POST",
+            mode: "no-cors",
+            body: JSON.stringify(data)
+        });
+
+        // บันทึกลงเครื่อง (เผื่อไว้ดูออฟไลน์)
+        logs.push({ id: Date.now(), ...data });
+        localStorage.setItem('rider_logs', JSON.stringify(logs));
+
+        alert("บันทึกสำเร็จ! ข้อมูลถูกเก็บใน Google Sheets แล้ว");
+        renderAll();
+    } catch (e) {
+        alert("บันทึกออนไลน์ขัดข้อง แต่เก็บในเครื่องให้แล้ว");
+    }
+}
+
 
         function deleteLog(id) {
             logs = logs.filter(l => l.id !== id);
