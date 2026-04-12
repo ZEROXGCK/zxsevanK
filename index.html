@@ -177,11 +177,16 @@ createApp({
             currentTab: 'main', isSyncing: false,
             webAppUrl: "https://script.google.com/macros/s/AKfycbwunuxleAlqYXpJto9eHlam0keiN85xmkddixDvjzCSRtr-cIxHxaWFzKuubjMq8DOU/exec",
             settings: { taxRate: 1, payoutRules: [
-                {startDay: 1, endDay: 3, payDay: 5},
-                {startDay: 4, endDay: 6, payDay: 8},
-                {startDay: 7, endDay: 9, payDay: 11},
-                {startDay: 10, endDay: 12, payDay: 14},
-                {startDay: 13, endDay: 15, payDay: 17}
+                {startDay: 1, endDay: 3, payDay: 11},
+                {startDay: 4, endDay: 6, payDay: 14},
+                {startDay: 7, endDay: 9, payDay: 17},
+                {startDay: 10, endDay: 12, payDay: 20},
+                {startDay: 13, endDay: 15, payDay: 23},
+                {startDay: 16, endDay: 18, payDay: 26},
+                {startDay: 19, endDay: 21, payDay: 29},    
+                {startDay: 22, endDay: 24, payDay: 1},
+                {startDay: 25, endDay: 27, payDay: 4},
+                {startDay: 28, endDay: 31, payDay: 8}
             ] },
             viewDate: new Date(),
             billForm: { date: new Date().toISOString().substr(0, 10), count: null, price: 15 },
