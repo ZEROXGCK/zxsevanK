@@ -263,7 +263,17 @@ createApp({
         },
         deleteItem(i) { if(confirm('ลบรายการนี้?')) { this.bills.splice(i, 1); this.save(); } },
         addPayoutRule() {
-            this.settings.payoutRules.push({startDay: 1, endDay: 3, payDay: 5});
+            this.settings.payoutRules.push({startDay: 1, endDay: 3, payDay: 5},
+                {startDay: 1, endDay: 3, payDay: 11},
+                {startDay: 4, endDay: 6, payDay: 14},
+                {startDay: 7, endDay: 9, payDay: 17},
+                {startDay: 10, endDay: 12, payDay: 20},
+                {startDay: 13, endDay: 15, payDay: 23},
+                {startDay: 16, endDay: 18, payDay: 26},
+                {startDay: 19, endDay: 21, payDay: 29},    
+                {startDay: 22, endDay: 24, payDay: 1},
+                {startDay: 25, endDay: 27, payDay: 4},
+                {startDay: 28, endDay: 31, payDay: 8});
             this.save();
         },
         save() {
