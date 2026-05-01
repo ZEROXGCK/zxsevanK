@@ -24,7 +24,7 @@
             <h3 class="text-lg font-bold mb-6 text-blue-600">แก้ไขข้อมูล</h3>
             <div class="space-y-4">
                 <div class="grid grid-cols-2 gap-3">
-                    <button v-for="p in [12, 15]" @click="billForm.price = p" :class="['py-3 rounded-2xl border-2 font-bold', billForm.price === p ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white text-slate-400']">฿{{p}}</button>
+                    <button v-for="p in [12, 15]" @click="billForm.price = p" :class="['py-3 rounded-2xl border-2 font-bold', billForm.price === p ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white text-slate-400']"></button>
                 </div>
                 <input type="date" v-model="billForm.date" class="w-full p-3 bg-slate-50 rounded-xl outline-none border-0 text-sm">
                 <input type="number" v-model.number="billForm.count" class="w-full p-3 bg-slate-50 rounded-xl outline-none border-0 text-lg font-bold" placeholder="จำนวนบิล">
