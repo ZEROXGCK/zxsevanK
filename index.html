@@ -99,20 +99,24 @@
                 </div>
             </div>
 
-            <div class="overflow-hidden border border-white/5 rounded-3xl bg-black/10 shadow-inner">
+            <div class="space-y-3">
+            <h3 class="text-[11px] font-bold text-slate-400 uppercase px-3">Payout Prediction ({{viewMonthShort}})</h3>
+            <div class="bg-white rounded-[2rem] overflow-hidden border">
                 <table class="w-full text-left text-[11px]">
-                    <thead class="bg-slate-800/20 text-[9px] font-bold text-slate-600 uppercase">
-                        <tr><th class="px-5 py-4">ช่วงวันที่</th><th class="px-2 py-4 text-center">บิล</th><th class="px-5 py-4 text-right">ยอดสุทธิ (฿)</th></tr>
+                    <thead class="bg-slate-50 text-[9px] font-bold text-slate-400 uppercase">
+                        <tr><th class="px-5 py-4">ช่วงวันที่</th><th class="px-2 py-4 text-center">บิล</th><th class="px-2 py-4 text-right">เงินเข้า</th><th class="px-5 py-4 text-right">วันจ่าย</th></tr>
                     </thead>
-                    <tbody class="divide-y divide-white/5 text-slate-300">
-                        <tr v-for="cycle in calculatedCycles" :key="cycle.payDay" :class="{'bg-blue-950/20': cycle.totalBill > 0}">
-                            <td class="px-5 py-4 font-medium text-slate-400">วันที่ {{cycle.startDay}}-{{cycle.endDay}}</td>
-                            <td class="px-2 py-4 text-center font-bold text-slate-100">{{cycle.totalBill}} บิล</td>
-                            <td class="px-5 py-4 text-right font-bold text-blue-400">฿{{cycle.totalAmount.toLocaleString()}}</td>
+                    <tbody class="divide-y divide-slate-50">
+                        <tr v-for="cycle in calculatedCycles" :key="cycle.payDay" :class="{'bg-blue-50/40': cycle.totalBill > 0}">
+                            <td class="px-5 py-3.5">{{cycle.startDay}} - {{cycle.endDay}}</td>
+                            <td class="px-2 py-3.5 text-center font-bold">{{cycle.totalBill}}</td>
+                            <td class="px-2 py-3.5 text-right font-bold text-blue-600">฿{{cycle.totalAmount.toFixed(0)}}</td>
+                            <td class="px-5 py-3.5 text-right font-bold text-emerald-500">{{cycle.payDate}}</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
+        </div>
 
             <div class="space-y-3.5 pt-2">
                 <div v-for="(item, idx) in filteredBills" :key="idx" class="flex justify-between items-center bg-black/10 p-4 rounded-3xl border border-white/5 shadow-inner">
@@ -134,67 +138,43 @@
             </div>
         </div>
     </div>
-
-    <main v-if="currentTab === 'settings'" class="neon-card p-8 space-y-6 animate-in slide-in-from-bottom-5">
-        <div class="flex justify-between items-center mb-2">
-            <h3 class="font-bold text-slate-300 uppercase text-xs tracking-widest">Settings Pro</h3>
-            <button @click="currentTab = 'main'" class="text-blue-500 font-bold text-xs uppercase tracking-wider bg-blue-950 px-4 py-1 rounded-full">เสร็จสิ้น</button>
-        </div>
-        
+<main v-if="currentTab === 'settings'" class="glass p-8 rounded-[2.5rem] space-y-6">
+        <h3 class="font-bold text-slate-700 uppercase text-xs">Settings</h3>
+       
         <div>
-            <label class="text-[10px] font-semibold text-slate-500 block mb-1.5 ml-1">ภาษีหักจ่าย (%)</label>
-            <input type="number" v-model="settings.taxRate" @change="save" class="w-full p-3.5 input-dark font-bold ring-2 ring-transparent focus:ring-blue-500/30">
-        </div>
-
-        <div class="glass-dark p-6 rounded-3xl border border-white/5">
-            <p class="text-[9px] font-bold text-teal-400 uppercase tracking-widest mb-1.5">Cloud Connection</p>
-            <p class="text-[10px] text-teal-600 font-mono">Status: Connected to Google Sheets (ID: 1x1J...2o)</p>
-        </div>
-
-        <div>
-            <div class="flex justify-between mb-4 items-center">
-                <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider ml-1">รอบการจ่ายเงิน</label>
-                <button @click="addPayoutRule" class="text-blue-500 text-[10px] font-bold bg-blue-950 px-3 py-1 rounded-full">+ เพิ่มรอบ</button>
-            </div>
-            <div class="space-y-2.5">
-                <div v-for="(p, idx) in settings.payoutRules" :key="idx" class="flex justify-between items-center bg-black/10 p-3.5 rounded-2xl border border-white/5 text-[11px]">
-                    <span class="font-bold text-slate-300">วันที่ {{p.startDay}}-{{p.endDay}}</span>
-                    <button @click="settings.payoutRules.splice(idx,1);save()"><i class="fa-solid fa-circle-minus text-rose-400 hover:text-rose-500 text-sm"></i></button>
+            <div class="flex justify-between mb-4"><label class="text-[10px] font-bold text-slate-400">ตั้งค่ารอบจ่าย (ระบุแค่วันที่)</label><button @click="addPayoutRule" class="text-blue-500 text-[10px] font-bold">เพิ่มรอบ</button></div>
+            <div class="space-y-2 mb-4">
+                <div v-for="(p, idx) in settings.payoutRules" :key="idx" class="flex justify-between bg-white p-3 rounded-xl border text-[10px]">
+                    <span>วันที่ {{p.startDay}}-{{p.endDay}}</span><span class="font-bold text-blue-600">จ่ายวันที่ {{p.payDay}}</span>
+                    <button @click="settings.payoutRules.splice(idx,1);save()"><i class="fa-solid fa-xmark text-rose-300"></i></button>
                 </div>
             </div>
+            <div class="grid grid-cols-3 gap-2 bg-slate-100 p-3 rounded-xl">
+                <input type="number" v-model.number="payoutForm.startDay" class="bg-transparent text-center text-xs" placeholder="เริ่ม">
+                <input type="number" v-model.number="payoutForm.endDay" class="bg-transparent text-center text-xs" placeholder="ถึง">
+                <input type="number" v-model.number="payoutForm.payDay" class="bg-transparent text-center text-xs" placeholder="จ่าย">
+            </div>
         </div>
-        
-    </main>
-
-</div>
-
+</main>
+    
 <script>
-// โค้ด Vue.js (เหมือนอันเดิมเป๊ะ)
-const { createApp } = Vue
+const { createApp, nextTick } = Vue
 createApp({
     data() {
         return {
-            currentTab: 'main', isSyncing: false,
-            webAppUrl: "https://script.google.com/macros/s/AKfycbwunuxleAlqYXpJto9eHlam0keiN85xmkddixDvjzCSRtr-cIxHxaWFzKuubjMq8DOU/exec",
-            settings: { taxRate: 1, payoutRules: [
-                {startDay: 1, endDay: 3, payDay: 11},
-                {startDay: 4, endDay: 6, payDay: 14},
-                {startDay: 7, endDay: 9, payDay: 17},
-                {startDay: 10, endDay: 12, payDay: 20},
-                {startDay: 13, endDay: 15, payDay: 23},
-                {startDay: 16, endDay: 18, payDay: 26},
-                {startDay: 19, endDay: 21, payDay: 29},    
-                {startDay: 22, endDay: 24, payDay: 1},
-                {startDay: 25, endDay: 27, payDay: 4},
-                {startDay: 28, endDay: 31, payDay: 8}
-            ] },
+            currentTab: 'record', subTab: 'bill', isEditing: false, editIndex: null,
+            // ตั้งค่าเริ่มต้นเผื่อกรณีข้อมูลเดิมพัง
+            settings: { taxRate: 3, payoutRules: [] },
             viewDate: new Date(),
             billForm: { date: new Date().toISOString().substr(0, 10), count: null, price: 15 },
-            bills: []
+            expenseForm: { date: new Date().toISOString().substr(0, 10), amount: null },
+            payoutForm: { startDay: 1, endDay: 15, payDay: 17 },
+            bills: [], expenses: []
         }
     },
     computed: {
-        viewMonthLabel() { return this.viewDate.toLocaleDateString('th-TH', { month: 'short', year: 'numeric' }); },
+        viewMonthLabel() { return this.viewDate.toLocaleDateString('th-TH', { month: 'long', year: 'numeric' }); },
+        viewMonthShort() { return this.viewDate.toLocaleDateString('th-TH', { month: 'short' }); },
         filteredBills() {
             const m = this.viewDate.getMonth(), y = this.viewDate.getFullYear();
             return this.bills.map((b, i) => ({ ...b, originalIndex: i }))
@@ -205,91 +185,78 @@ createApp({
         },
         monthlyStats() {
             const b = this.filteredBills.reduce((s, i) => s + i.count, 0);
-            const n = this.filteredBills.reduce((s, i) => s + (i.count * (i.price || 15) * (1 - (this.settings.taxRate)/100)), 0);
+            const n = this.filteredBills.reduce((s, i) => s + (i.count * (i.price || 15) * (1 - (this.settings.taxRate || 3)/100)), 0);
             return { totalBills: b, totalNet: n };
         },
         calculatedCycles() {
             const m = this.viewDate.getMonth() + 1, y = this.viewDate.getFullYear();
-            return (this.settings.payoutRules || []).map(r => {
+            // ป้องกัน Error ถ้า payoutRules ไม่มีค่า
+            const rules = this.settings.payoutRules || [];
+            return rules.map(r => {
                 const s = `${y}-${String(m).padStart(2,'0')}-${String(r.startDay).padStart(2,'0')}`;
                 const e = `${y}-${String(m).padStart(2,'0')}-${String(r.endDay).padStart(2,'0')}`;
                 const cB = this.bills.filter(b => b.date >= s && b.date <= e);
-                const tax = 1 - (this.settings.taxRate) / 100;
+                const tax = 1 - (this.settings.taxRate || 3) / 100;
                 return { 
                     ...r, 
                     totalBill: cB.reduce((sum, b) => sum + b.count, 0), 
-                    totalAmount: cB.reduce((sum, b) => sum + (b.count * (b.price || 15) * tax), 0)
+                    totalAmount: cB.reduce((sum, b) => sum + (b.count * (b.price || 15), 0),
+                    payDate: `${r.payDay} ${this.viewMonthShort}` 
                 };
             }).sort((a,b) => a.startDay - b.startDay);
         }
     },
     methods: {
         changeMonth(s) { const d = new Date(this.viewDate); d.setMonth(d.getMonth() + s); this.viewDate = d; },
-        async saveBill() {
+        saveBill() {
             if(!this.billForm.count) return;
-            const gross = this.billForm.count * this.billForm.price;
-            const taxAmount = gross * (this.settings.taxRate / 100);
-            const net = gross - taxAmount;
-
-            const payload = {
-                date: this.billForm.date,
-                bills: this.billForm.count,
-                gross: gross, tax: taxAmount, net: net,
-                rate: this.billForm.price
-            };
-
-            this.isSyncing = true;
-            try {
-                await fetch(this.webAppUrl, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) });
-                this.bills.unshift({...this.billForm});
-                this.billForm.count = null;
-                this.save();
-            } catch (e) { alert("บันทึกลง Cloud ไม่สำเร็จ แต่เก็บในเครื่องให้แล้ว"); }
-            finally { this.isSyncing = false; }
+            if(this.isEditing) { this.bills[this.editIndex] = {...this.billForm}; this.isEditing = false; }
+            else { this.bills.unshift({...this.billForm}); }
+            this.billForm.count = null; this.save();
         },
-        async fetchFromCloud() {
-            if(!confirm('ดึงข้อมูลจาก Google Sheets มาทับข้อมูลในเครื่องไหม?')) return;
-            this.isSyncing = true;
-            try {
-                const response = await fetch(this.webAppUrl + "?action=getLogs");
-                const cloudData = await response.json();
-                if(cloudData && cloudData.length > 0) {
-                    this.bills = cloudData;
-                    this.save();
-                    alert('ดึงข้อมูลกลับมาสำเร็จ!');
-                }
-            } catch (e) { alert('ไม่สามารถดึงข้อมูลได้'); }
-            finally { this.isSyncing = false; }
-        },
-        deleteItem(i) { if(confirm('ลบรายการนี้?')) { this.bills.splice(i, 1); this.save(); } },
+        editBill(i) { this.editIndex = i; this.billForm = {...this.bills[i]}; this.isEditing = true; },
+        cancelEdit() { this.isEditing = false; },
+        saveExpense() { if(!this.expenseForm.amount) return; this.expenses.unshift({...this.expenseForm}); this.expenseForm.amount = null; this.save(); },
         addPayoutRule() {
-            this.settings.payoutRules.push({startDay: 1, endDay: 3, payDay: 5},
-                {startDay: 1, endDay: 3, payDay: 11},
-                {startDay: 4, endDay: 6, payDay: 14},
-                {startDay: 7, endDay: 9, payDay: 17},
-                {startDay: 10, endDay: 12, payDay: 20},
-                {startDay: 13, endDay: 15, payDay: 23},
-                {startDay: 16, endDay: 18, payDay: 26},
-                {startDay: 19, endDay: 21, payDay: 29},    
-                {startDay: 22, endDay: 24, payDay: 1},
-                {startDay: 25, endDay: 27, payDay: 4},
-                {startDay: 28, endDay: 31, payDay: 8});
+            // ตรวจสอบความสมบูรณ์ของโครงสร้างก่อนเพิ่ม
+            if(!this.settings.payoutRules) this.settings.payoutRules = [];
+            this.settings.payoutRules.push({...this.payoutForm});
             this.save();
         },
+        deleteItem(t, i) { if(confirm('ลบรายการนี้?')) { this[t].splice(i, 1); this.save(); } },
         save() {
-            localStorage.setItem('rider_v5_final', JSON.stringify({ 
-                bills: this.bills, settings: this.settings 
+            localStorage.setItem('rider_v4_4_billing', JSON.stringify({ 
+                bills: this.bills, 
+                expenses: this.expenses, 
+                settings: this.settings 
             }));
+            if(this.currentTab === 'summary') this.renderChart();
+        },
+        renderChart() {
+            nextTick(() => {
+                const ctx = document.getElementById('mainChart'); if(!ctx) return;
+                if(window.chartObj) window.chartObj.destroy();
+                window.chartObj = new Chart(ctx, { 
+                    type: 'doughnut', 
+                    data: { 
+                        labels: ['รายได้', 'รายจ่าย'], 
+                        datasets: [{ data: [this.monthlyStats.totalNet, 100], backgroundColor: ['#2563eb', '#f43f5e'] }] 
+                    } 
+                });
+            });
         }
     },
     mounted() {
-        const d = JSON.parse(localStorage.getItem('rider_v5_final'));
+        const d = JSON.parse(localStorage.getItem('rider_v4_4_billing'));
         if(d) { 
             this.bills = d.bills || []; 
-            this.settings = d.settings || { taxRate: 1, payoutRules: [] };
+            this.expenses = d.expenses || []; 
+            this.settings = d.settings || { taxRate: 3, payoutRules: [] };
+            // ถ้าดึงข้อมูลมาแล้วแต่ไม่มี payoutRules ให้สร้าง Array เปล่ารอไว้
+            if(!this.settings.payoutRules) this.settings.payoutRules = [];
         }
     }
 }).mount('#app')
 </script>
-</body>
+    <bodyody>
 </html>
